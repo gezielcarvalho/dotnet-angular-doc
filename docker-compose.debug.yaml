@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: catalog-backend-debug
+    ports:
+      - "5175:80"
+      - "7277:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    volumes:
+      - ./backend:/src
+      - backend-nuget:/root/.nuget/packages
+    networks:
+      - catalog-network
+    stdin_open: true
+    tty: true
+    command: ["tail", "-f", "/dev/null"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: catalog-frontend-debug
+    ports:
+      - "4200:4200"
+      - "49153:49153"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend-angular:/app/.angular
+    networks:
+      - catalog-network
+    depends_on:
+      - backend
+
+volumes:
+  backend-nuget:
+  frontend-angular:
+
+networks:
+  catalog-network:
+    driver: bridge

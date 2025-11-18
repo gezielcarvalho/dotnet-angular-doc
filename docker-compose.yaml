@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: catalog-backend
+    ports:
+      - "5175:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
+    volumes:
+      - ./backend:/src
+      - backend-nuget:/root/.nuget/packages
+    networks:
+      - catalog-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: catalog-frontend
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend-angular:/app/.angular
+    networks:
+      - catalog-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-nuget:
+  frontend-angular:
+
+networks:
+  catalog-network:
+    driver: bridge

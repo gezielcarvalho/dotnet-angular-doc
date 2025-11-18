@@ -1,0 +1,23 @@
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Development containers
+.devcontainer/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+
+# IDE
+.vscode/
+.vs/
+*.suo
+*.user
+.idea/

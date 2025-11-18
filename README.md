@@ -1,63 +1,179 @@
-# Solution
+# dotnet-angular-catalog
 
-This solution is a simple web application that allows users to view and edit a list of products. The solution is composed of two projects:
+A full-stack catalog management application built with .NET 6 and Angular 17. The solution provides a RESTful API for managing products, categories, posts, tags, and users with a modern Angular frontend.
 
-- **Backend**: A .NET 6 Web API project that exposes a RESTful API to manage products.
-- **Frontend**: An Angular 16.2.0 project that provides a user interface to interact with the backend.
+## Projects
+
+- **Backend**: A .NET 6 Web API project with Entity Framework Core, Swagger documentation, and pagination support
+- **Frontend**: An Angular 17 standalone application with Material Design, Tailwind CSS, and Font Awesome icons
+- **Backend.Tests**: Unit tests for backend services and controllers
 
 ## Backend
 
-The backend project is a .NET 6 Web API project that exposes a RESTful API to manage products. The project is composed of the following folders:
+The backend is a .NET 6 Web API with the following structure:
 
-- **Controllers**: Contains the controllers that expose the RESTful API.
-- **Data**: Contains the data access layer.
-- **Models**: Contains the models used by the controllers and the data access layer.
-- **Properties**: Contains the launchSettings.json file, which is used to configure the application when it is launched from Visual Studio.
-- **appsettings.json**: Contains the configuration settings for the application.
-- **Program.cs**: Contains the entry point for the application.
-- **ProductsApi.csproj**: Contains the project configuration.
-- **README.md**: Contains the documentation for the project.
+- **Controllers**: RESTful API endpoints for Categories, Posts, PostTags, Products, Tags, and Users
+- **Data**: Entity Framework Core DbContext and database migrations
+- **Models**: Domain entities and DTOs (Data Transfer Objects)
+- **Services**: Business logic and service layer implementations
+- **Filters**: Request filtering (pagination)
+- **Helpers**: Utility classes for pagination and stored procedures
+- **Wrappers**: Response wrappers for consistent API responses
+
+**Key Features:**
+
+- Entity Framework Core 7 with SQL Server support
+- Swagger/OpenAPI documentation
+- Pagination support
+- In-memory database option for testing
+- Database migrations included
 
 ## Frontend
 
-The frontend project is an Angular 16.2.0 project that provides a user interface to interact with the backend. The project is composed of the following folders:
+The frontend is an Angular 17 standalone application with modern features:
 
-- **src/app**: Contains the components, services, and models used by the application.
-- **src/assets**: Contains the images used by the application.
-- **src/index.html**: Contains the HTML file that is used as the entry point for the application.
-- **src/main.ts**: Contains the entry point for the application.
-- **src/styles.css**: Contains the global styles used by the application.
-- **src/tsconfig.app.json**: Contains the TypeScript configuration for the application.
-- **src/tsconfig.json**: Contains the TypeScript configuration for the project.
-- **src/tsconfig.spec.json**: Contains the TypeScript configuration for the tests.
-- **angular.json**: Contains the Angular configuration for the project.
-- **karma.conf.js**: Contains the configuration for the Karma test runner.
-- **package.json**: Contains the dependencies for the project.
-- **README.md**: Contains the documentation for the project.
+- **Standalone Components**: Built with Angular 17's standalone architecture (no NgModules)
+- **Angular Material**: Material Design components for UI
+- **Tailwind CSS**: Utility-first CSS framework for styling
+- **Font Awesome**: Icon library integration
+- **RxJS**: Reactive programming for async operations
+- **TypeScript 5.2**: Latest TypeScript features
+
+**Project Structure:**
+
+- **src/app**: Components, services, and routing configuration
+- **src/assets**: Static assets and images
+- **src/styles.css**: Global styles with Tailwind directives
 
 ## Getting Started
 
-To get started, you will need to clone the repository to your local machine. Once cloned, you can open the solution in Visual Studio 2022 Preview 4.1 and run the application. Alternatively, you can run the frontend and backend projects separately.
+### Prerequisites
 
-### Running the Application
+- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [Node.js 18+](https://nodejs.org/) and npm
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for containerized development)
+- Visual Studio 2022 or VS Code (optional)
 
-Before running the application, you need to setup the startup projects in Visual Studio. To do this, right-click on the solution in the Solution Explorer and select **Set Startup Projects...**. In the dialog that appears, select **Multiple startup projects** and set the **Action** for both the **Backend** and **Frontend** projects to **Start**. Click **OK** to save the changes.
+### Running with Docker (Recommended)
+
+The easiest way to run the application is using Docker Compose:
+
+```bash
+# Start both frontend and backend in development mode with hot reload
+docker-compose up
+
+# Or run in detached mode
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
+
+The application will be available at:
+
+- **Frontend**: http://localhost:4200
+- **Backend API**: http://localhost:5175
+- **Swagger UI**: http://localhost:5175/swagger
+
+#### Debug Mode
+
+For debugging with VS Code or Visual Studio:
+
+```bash
+# Start containers in debug mode (keeps containers running for debugger attachment)
+docker-compose -f docker-compose.debug.yaml up
+```
+
+### Running Locally (Without Docker)
+
+#### Backend
+
+```bash
+cd backend
+dotnet restore
+dotnet run
+```
+
+The API will be available at http://localhost:5175 with Swagger documentation at http://localhost:5175/swagger
+
+#### Frontend
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The application will be available at http://localhost:4200
+
+### Running Tests
+
+```bash
+# Backend tests
+cd backend.tests
+dotnet test
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+## Docker Configuration
+
+The project includes comprehensive Docker support:
+
+- **Dockerfile** (Backend): Multi-stage build with development and production targets
+- **Dockerfile** (Frontend): Node.js development with nginx production build
+- **docker-compose.yaml**: Development environment with hot reload
+- **docker-compose.debug.yaml**: Debug configuration for IDE attachment
+- **.dockerignore**: Optimized to exclude unnecessary files
+
+**Features:**
+
+- Hot reload for both frontend and backend during development
+- Volume mounting for source code changes
+- Persistent volumes for node_modules and NuGet packages
+- Debugger support in development containers
+- Production-ready nginx configuration for frontend
+- Network isolation with custom bridge network
+
+## Database
+
+The application uses Entity Framework Core with migrations. By default, it's configured to use SQL Server, but can also use an in-memory database for testing.
+
+To apply migrations:
+
+```bash
+cd backend
+dotnet ef database update
+```
+
+## API Documentation
+
+Once the backend is running, visit http://localhost:5175/swagger for interactive API documentation powered by Swagger/OpenAPI.
 
 ## References
 
-Based on the following:
+**Original Inspiration:**
 
-- https://github.com/gezielcarvalho/AngularDotNetSolution
-- https://www.figma.com/file/1n0aifcfatWv9ozp16XCrq/DSCatalog-Bootcamp?type=design&node-id=0%3A1&mode=design&t=89PHify6c8CnXbYN-1
-- https://www.generatedata.com/
-- https://codewithmukesh.com/blog/pagination-in-aspnet-core-webapi/
+- [AngularDotNetSolution](https://github.com/gezielcarvalho/AngularDotNetSolution)
+- [DSCatalog Design](https://www.figma.com/file/1n0aifcfatWv9ozp16XCrq/DSCatalog-Bootcamp)
+- [Generate Test Data](https://www.generatedata.com/)
+- [Pagination in ASP.NET Core](https://codewithmukesh.com/blog/pagination-in-aspnet-core-webapi/)
 
-Future:
+**Angular Standalone Components:**
 
-- https://www.youtube.com/watch?v=5ZLmcDi30YI
-- https://www.youtube.com/watch?v=PR7xz5vQKGg
+- [Angular Standalone Components Unleashed](https://blogs.halodoc.io/angular-standalone-components-unleashed-exploring-the-magic-of-a-world-without-ngmodule/)
+- [Standalone Angular Applications](https://dev.to/this-is-angular/angular-revisited-standalone-angular-applications-the-replacement-for-ngmodules-238m)
 
-### Standalone
+**Additional Resources:**
 
-https://blogs.halodoc.io/angular-standalone-components-unleashed-exploring-the-magic-of-a-world-without-ngmodule/
-https://dev.to/this-is-angular/angular-revisited-standalone-angular-applications-the-replacement-for-ngmodules-238m
+- [Docker Tutorial](https://www.youtube.com/watch?v=5ZLmcDi30YI)
+- [Advanced Docker](https://www.youtube.com/watch?v=PR7xz5vQKGg)
+
+## License
+
+This project is for educational and demonstration purposes.
