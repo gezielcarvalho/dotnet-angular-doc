@@ -1,5 +1,5 @@
 # Backend Dockerfile with debugging support
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
 WORKDIR /app
 EXPOSE 80
 
@@ -20,7 +20,7 @@ RUN dotnet build "Backend.csproj" -c Debug -o /app/build
 ENTRYPOINT ["dotnet", "watch", "run", "--project", "Backend.csproj", "--urls", "http://+:80", "--no-launch-profile"]
 
 # Production stage
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS production
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS production
 WORKDIR /app
 EXPOSE 80
 COPY --from=development /app/build .

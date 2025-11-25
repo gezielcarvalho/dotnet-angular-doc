@@ -1,16 +1,16 @@
 # dotnet-angular-catalog
 
-A full-stack catalog management application built with .NET 6 and Angular 17. The solution provides a RESTful API for managing products, categories, posts, tags, and users with a modern Angular frontend.
+A full-stack catalog management application built with .NET 8 and Angular 17. The solution provides a RESTful API for managing products, categories, posts, tags, and users with a modern Angular frontend.
 
 ## Projects
 
-- **Backend**: A .NET 6 Web API project with Entity Framework Core, Swagger documentation, and pagination support
+- **Backend**: A .NET 8 Web API project with Entity Framework Core, Swagger documentation, and pagination support
 - **Frontend**: An Angular 17 standalone application with Material Design, Tailwind CSS, and Font Awesome icons
 - **Backend.Tests**: Unit tests for backend services and controllers
 
 ## Backend
 
-The backend is a .NET 6 Web API with the following structure:
+The backend is a .NET 8 Web API with the following structure:
 
 - **Controllers**: RESTful API endpoints for Categories, Posts, PostTags, Products, Tags, and Users
 - **Data**: Entity Framework Core DbContext and database migrations
@@ -22,7 +22,7 @@ The backend is a .NET 6 Web API with the following structure:
 
 **Key Features:**
 
-- Entity Framework Core 7 with SQL Server support
+- Entity Framework Core 8 with SQL Server support
 - Swagger/OpenAPI documentation
 - Pagination support
 - In-memory database option for testing
@@ -49,7 +49,7 @@ The frontend is an Angular 17 standalone application with modern features:
 
 ### Prerequisites
 
-- [.NET 6 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 18+](https://nodejs.org/) and npm
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional, for containerized development)
 - Visual Studio 2022 or VS Code (optional)
