@@ -145,8 +145,7 @@ public class DocumentsController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<ApiResponse<DocumentDTO>>> CreateDocument(
-        [FromForm] CreateDocumentRequest request,
-        [FromForm] IFormFile file)
+        [FromForm] CreateDocumentRequest request)
     {
         var userId = GetCurrentUserId();
         var username = GetCurrentUsername();
@@ -154,23 +153,23 @@ public class DocumentsController : ControllerBase
         if (!await _permissionService.CanAccessFolderAsync(userId, request.FolderId, "Write"))
             return Forbid();
 
-        if (file == null || file.Length == 0)
+        if (request.File == null || request.File.Length == 0)
             return BadRequest(ApiResponse<DocumentDTO>.ErrorResponse("File is required"));
 
-        var extension = _fileStorageService.GetFileExtension(file.FileName);
+        var extension = _fileStorageService.GetFileExtension(request.File.FileName);
         if (!_fileStorageService.IsAllowedExtension(extension))
             return BadRequest(ApiResponse<DocumentDTO>.ErrorResponse($"File type {extension} is not allowed"));
 
-        if (!_fileStorageService.IsFileSizeValid(file.Length))
+        if (!_fileStorageService.IsFileSizeValid(request.File.Length))
             return BadRequest(ApiResponse<DocumentDTO>.ErrorResponse("File size exceeds maximum allowed size"));
 
         var documentId = Guid.NewGuid();
 
         // Save file
         string filePath;
-        using (var stream = file.OpenReadStream())
+        using (var stream = request.File.OpenReadStream())
         {
-            filePath = await _fileStorageService.SaveFileAsync(stream, file.FileName, documentId, 1);
+            filePath = await _fileStorageService.SaveFileAsync(stream, request.File.FileName, documentId, 1);
         }
 
         var document = new Document
@@ -178,9 +177,9 @@ public class DocumentsController : ControllerBase
             Id = documentId,
             Title = request.Title,
             Description = request.Description,
-            FileName = file.FileName,
+            FileName = request.File.FileName,
             FileExtension = extension,
-            FileSizeBytes = file.Length,
+            FileSizeBytes = request.File.Length,
             FilePath = filePath,
             Status = "Draft",
             CurrentVersion = 1,
@@ -199,9 +198,9 @@ public class DocumentsController : ControllerBase
             Id = Guid.NewGuid(),
             DocumentId = documentId,
             VersionNumber = 1,
-            FileName = file.FileName,
+            FileName = request.File.FileName,
             FilePath = filePath,
-            FileSizeBytes = file.Length,
+            FileSizeBytes = request.File.Length,
             ChangeComment = "Initial version",
             CreatedAt = DateTime.UtcNow,
             CreatedBy = username
@@ -277,8 +276,7 @@ public class DocumentsController : ControllerBase
     [HttpPost("{id}/upload-version")]
     public async Task<ActionResult<ApiResponse<DocumentVersionDTO>>> UploadNewVersion(
         Guid id,
-        [FromForm] IFormFile file,
-        [FromForm] string? changeComment)
+        [FromForm] UploadDocumentVersionRequest request)
     {
         var userId = GetCurrentUserId();
         var username = GetCurrentUsername();
@@ -290,30 +288,30 @@ public class DocumentsController : ControllerBase
         if (document == null || document.IsDeleted)
             return NotFound(ApiResponse<DocumentVersionDTO>.ErrorResponse("Document not found"));
 
-        if (file == null || file.Length == 0)
+        if (request.File == null || request.File.Length == 0)
             return BadRequest(ApiResponse<DocumentVersionDTO>.ErrorResponse("File is required"));
 
-        var extension = _fileStorageService.GetFileExtension(file.FileName);
+        var extension = _fileStorageService.GetFileExtension(request.File.FileName);
         if (!_fileStorageService.IsAllowedExtension(extension))
             return BadRequest(ApiResponse<DocumentVersionDTO>.ErrorResponse($"File type {extension} is not allowed"));
 
-        if (!_fileStorageService.IsFileSizeValid(file.Length))
+        if (!_fileStorageService.IsFileSizeValid(request.File.Length))
             return BadRequest(ApiResponse<DocumentVersionDTO>.ErrorResponse("File size exceeds maximum allowed size"));
 
         var newVersion = document.CurrentVersion + 1;
 
         // Save file
         string filePath;
-        using (var stream = file.OpenReadStream())
+        using (var stream = request.File.OpenReadStream())
         {
-            filePath = await _fileStorageService.SaveFileAsync(stream, file.FileName, id, newVersion);
+            filePath = await _fileStorageService.SaveFileAsync(stream, request.File.FileName, id, newVersion);
         }
 
         // Update document
         document.CurrentVersion = newVersion;
-        document.FileName = file.FileName;
+        document.FileName = request.File.FileName;
         document.FileExtension = extension;
-        document.FileSizeBytes = file.Length;
+        document.FileSizeBytes = request.File.Length;
         document.FilePath = filePath;
         document.ModifiedAt = DateTime.UtcNow;
         document.ModifiedBy = username;
@@ -324,10 +322,10 @@ public class DocumentsController : ControllerBase
             Id = Guid.NewGuid(),
             DocumentId = id,
             VersionNumber = newVersion,
-            FileName = file.FileName,
+            FileName = request.File.FileName,
             FilePath = filePath,
-            FileSizeBytes = file.Length,
-            ChangeComment = changeComment ?? $"Version {newVersion}",
+            FileSizeBytes = request.File.Length,
+            ChangeComment = request.ChangeComment ?? $"Version {newVersion}",
             CreatedAt = DateTime.UtcNow,
             CreatedBy = username
         };

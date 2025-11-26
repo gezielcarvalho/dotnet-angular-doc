@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Backend.Models.DTO.Documents;
 
@@ -15,4 +16,7 @@ public class CreateDocumentRequest
     public Guid FolderId { get; set; }
 
     public List<Guid>? TagIds { get; set; }
+
+    [Required]
+    public IFormFile? File { get; set; }
 }
