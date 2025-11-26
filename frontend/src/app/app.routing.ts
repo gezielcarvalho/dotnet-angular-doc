@@ -31,6 +31,13 @@ export const routes: Route[] = [
                         './edm/components/document-list/document-list.component'
                     ).then(m => m.DocumentListComponent),
             },
+            {
+                path: 'documents/upload',
+                loadComponent: () =>
+                    import(
+                        './edm/components/upload-document/upload-document.component'
+                    ).then(m => m.UploadDocumentComponent),
+            },
         ],
     },
     {
