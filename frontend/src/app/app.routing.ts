@@ -9,6 +9,13 @@ export const routes: Route[] = [
         pathMatch: 'full',
     },
     {
+        path: 'login',
+        loadComponent: () =>
+            import('./public/screens/login/login.component').then(
+                m => m.LoginComponent,
+            ),
+    },
+    {
         path: 'products',
         loadComponent: () =>
             import('./public/screens/products/products.component').then(
