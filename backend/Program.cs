@@ -1,4 +1,6 @@
 using Backend.Data;
+using Backend.Services;
+using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +23,11 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 // Memory Cache
 builder.Services.AddMemoryCache();
+
+// Application Services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
