@@ -69,11 +69,12 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-// Apply migrations automatically on startup
+// Apply migrations and seed data automatically on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<EdmDbContext>();
     db.Database.Migrate();
+    await DbSeeder.SeedAsync(db);
 }
 
 // Configure the HTTP request pipeline.
