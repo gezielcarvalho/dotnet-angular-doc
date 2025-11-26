@@ -158,7 +158,7 @@ namespace Backend.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.FilePath).IsRequired().HasMaxLength(2000);
                 entity.Property(e => e.MimeType).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.VersionComment).HasMaxLength(1000);
+                entity.Property(e => e.ChangeComment).HasMaxLength(1000);
                 
                 entity.HasOne(e => e.Document)
                     .WithMany(d => d.Versions)
