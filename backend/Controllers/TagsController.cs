@@ -1,132 +1,146 @@
 ﻿using Backend.Data;
-using Backend.Models;
-using Microsoft.AspNetCore.Http;
+using Backend.Models.DTO.Common;
+using Backend.Models.DTO.Tags;
+using Backend.Models.EDM;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
-namespace Backend.Controllers
+namespace Backend.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class TagsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TagsController : ControllerBase
+    private readonly EdmDbContext _context;
+
+    public TagsController(EdmDbContext context)
     {
-        private readonly CatalogDBContext _context;
+        _context = context;
+    }
 
-        public TagsController(CatalogDBContext context)
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<List<TagDTO>>>> GetTags()
+    {
+        var tags = await _context.Tags
+            .Include(t => t.DocumentTags)
+            .Select(t => new TagDTO
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                Color = t.Color,
+                DocumentCount = t.DocumentTags.Count
+            })
+            .ToListAsync();
+
+        return Ok(ApiResponse<List<TagDTO>>.SuccessResponse(tags));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<TagDTO>>> GetTag(Guid id)
+    {
+        var tag = await _context.Tags
+            .Include(t => t.DocumentTags)
+            .Where(t => t.Id == id)
+            .Select(t => new TagDTO
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                Color = t.Color,
+                DocumentCount = t.DocumentTags.Count
+            })
+            .FirstOrDefaultAsync();
+
+        if (tag == null)
+            return NotFound(ApiResponse<TagDTO>.ErrorResponse("Tag not found"));
+
+        return Ok(ApiResponse<TagDTO>.SuccessResponse(tag));
+    }
+
+    [Authorize(Roles = "SystemAdmin,Admin")]
+    [HttpPost]
+    public async Task<ActionResult<ApiResponse<TagDTO>>> CreateTag([FromBody] CreateTagRequest request)
+    {
+        var username = User.Identity?.Name ?? "";
+
+        // Check if tag name already exists
+        if (await _context.Tags.AnyAsync(t => t.Name == request.Name))
+            return BadRequest(ApiResponse<TagDTO>.ErrorResponse("Tag with this name already exists"));
+
+        var tag = new Tag
         {
-            _context = context;
-        }
+            Id = Guid.NewGuid(),
+            Name = request.Name,
+            Description = request.Description,
+            Color = request.Color,
+            IsDeleted = false,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = username
+        };
 
-        // GET: api/Tags
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Tag>>> GetTag()
+        _context.Tags.Add(tag);
+        await _context.SaveChangesAsync();
+
+        var tagDto = new TagDTO
         {
-            if (_context.Tag == null)
-            {
-                return NotFound();
-            }
-            return await _context.Tag
-                            .Include(t => t.PostTags)
-                            .ThenInclude(p => p.Post)
-                            .ToListAsync();
-        }
+            Id = tag.Id,
+            Name = tag.Name,
+            Description = tag.Description,
+            Color = tag.Color,
+            DocumentCount = 0
+        };
 
-        // GET: api/Tags/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Tag>> GetTag(int id)
-        {
-            if (_context.Tag == null)
-            {
-                return NotFound();
-            }
-            var tag = await _context.Tag
-                                .Include(t => t.PostTags)
-                                .ThenInclude(p => p.Post)
-                                .FirstOrDefaultAsync(t => t.Id == id);
+        return CreatedAtAction(nameof(GetTag), new { id = tag.Id },
+            ApiResponse<TagDTO>.SuccessResponse(tagDto, "Tag created successfully"));
+    }
 
-            if (tag == null)
-            {
-                return NotFound();
-            }
+    [Authorize(Roles = "SystemAdmin,Admin")]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<ApiResponse<TagDTO>>> UpdateTag(Guid id, [FromBody] CreateTagRequest request)
+    {
+        var username = User.Identity?.Name ?? "";
 
-            return tag;
-        }
+        var tag = await _context.Tags.FindAsync(id);
+        if (tag == null || tag.IsDeleted)
+            return NotFound(ApiResponse<TagDTO>.ErrorResponse("Tag not found"));
 
-        // PUT: api/Tags/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutTag(int id, Tag tag)
-        {
-            if (id != tag.Id)
-            {
-                return BadRequest();
-            }
+        // Check if new name conflicts with existing tag
+        if (await _context.Tags.AnyAsync(t => t.Name == request.Name && t.Id != id))
+            return BadRequest(ApiResponse<TagDTO>.ErrorResponse("Tag with this name already exists"));
 
-            _context.Entry(tag).State = EntityState.Modified;
+        tag.Name = request.Name;
+        tag.Description = request.Description;
+        tag.Color = request.Color;
+        tag.ModifiedAt = DateTime.UtcNow;
+        tag.ModifiedBy = username;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TagExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        var result = await GetTag(id);
+        return Ok(ApiResponse<TagDTO>.SuccessResponse(result.Value?.Data!, "Tag updated successfully"));
+    }
 
-        // POST: api/Tags
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Tag>> PostTag(Tag tag)
-        {
-            if (_context.Tag == null)
-            {
-                return Problem("Entity set 'CatalogDBContext.Tag'  is null.");
-            }
-            _context.Tag.Add(tag);
-            await _context.SaveChangesAsync();
+    [Authorize(Roles = "SystemAdmin,Admin")]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<ApiResponse<bool>>> DeleteTag(Guid id)
+    {
+        var username = User.Identity?.Name ?? "";
 
-            return CreatedAtAction("GetTag", new { id = tag.Id }, tag);
-        }
+        var tag = await _context.Tags.FindAsync(id);
+        if (tag == null || tag.IsDeleted)
+            return NotFound(ApiResponse<bool>.ErrorResponse("Tag not found"));
 
-        // DELETE: api/Tags/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTag(int id)
-        {
-            if (_context.Tag == null)
-            {
-                return NotFound();
-            }
-            var tag = await _context.Tag.FindAsync(id);
-            if (tag == null)
-            {
-                return NotFound();
-            }
+        // Soft delete
+        tag.IsDeleted = true;
+        tag.DeletedAt = DateTime.UtcNow;
+        tag.DeletedBy = username;
 
-            _context.Tag.Remove(tag);
-            await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
-
-        private bool TagExists(int id)
-        {
-            return (_context.Tag?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        return Ok(ApiResponse<bool>.SuccessResponse(true, "Tag deleted successfully"));
     }
 }

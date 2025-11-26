@@ -7,6 +7,8 @@ namespace Backend.Models.EDM
         public Guid FolderId { get; set; }
         public string FileName { get; set; } = string.Empty;
         public long FileSize { get; set; }
+        public long FileSizeBytes { get; set; }
+        public string FilePath { get; set; } = string.Empty;
         public string MimeType { get; set; } = string.Empty;
         public string FileExtension { get; set; } = string.Empty;
         public int CurrentVersion { get; set; } = 1;
