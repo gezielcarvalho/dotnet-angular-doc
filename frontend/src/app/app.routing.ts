@@ -16,6 +16,24 @@ export const routes: Route[] = [
             ),
     },
     {
+        path: 'edm',
+        canActivate: [AuthGuard],
+        children: [
+            {
+                path: '',
+                redirectTo: 'documents',
+                pathMatch: 'full',
+            },
+            {
+                path: 'documents',
+                loadComponent: () =>
+                    import(
+                        './edm/components/document-list/document-list.component'
+                    ).then(m => m.DocumentListComponent),
+            },
+        ],
+    },
+    {
         path: 'products',
         loadComponent: () =>
             import('./public/screens/products/products.component').then(
