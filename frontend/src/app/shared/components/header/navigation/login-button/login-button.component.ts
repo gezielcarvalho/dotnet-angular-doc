@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from 'src/app/shared/services/auth.service';
 import { SidebarIconComponent } from '../../sidebar/sidebar-icon/sidebar-icon.component';
@@ -18,7 +19,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
     isLoggedInSubscription: Subscription | undefined;
     isLoggedIn = false;
 
-    constructor(private authService: AuthService) {}
+    constructor(private authService: AuthService, private router: Router) {}
 
     ngOnDestroy(): void {
         this.isLoggedInSubscription?.unsubscribe();
@@ -38,6 +39,9 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
         console.log('Login button clicked');
         if (this.isLoggedIn) {
             this.authService.logout();
-        } else this.authService.login();
+        } else {
+            // Navigate to login page (to be created)
+            this.router.navigate(['/login']);
+        }
     }
 }
