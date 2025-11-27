@@ -1,0 +1,6 @@
+# .env
+server-config.sh
+*.log
+*.bak
+.DS_Store
+secrets/
