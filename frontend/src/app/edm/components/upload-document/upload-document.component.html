@@ -24,7 +24,10 @@
                 </label>
                 <div
                     class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors"
-                    [class.border-indigo-500]="selectedFile">
+                    [class.border-indigo-500]="selectedFile"
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onDrop($event)">
                     <div class="space-y-1 text-center">
                         <svg
                             class="mx-auto h-12 w-12 text-gray-400"

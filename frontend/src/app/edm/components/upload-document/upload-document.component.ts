@@ -127,40 +127,62 @@ export class UploadDocumentComponent implements OnInit {
     onFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
-            const file = input.files[0];
+            this.handleFile(input.files[0], input);
+        }
+    }
 
-            // Validate file extension
-            const fileExtension = this.getFileExtension(file.name);
-            if (!this.allowedExtensions.includes(fileExtension.toLowerCase())) {
-                this.errorMessage = `File type ${fileExtension} is not allowed. Allowed types: ${this.allowedExtensions.join(
-                    ', ',
-                )}`;
-                this.selectedFile = null;
-                this.selectedFileName = '';
-                input.value = '';
-                return;
-            }
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
-            // Validate file size
-            if (file.size > this.maxFileSize) {
-                this.errorMessage = `File size exceeds maximum allowed size of ${this.formatFileSize(
-                    this.maxFileSize,
-                )}`;
-                this.selectedFile = null;
-                this.selectedFileName = '';
-                input.value = '';
-                return;
-            }
+    onDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
-            this.selectedFile = file;
-            this.selectedFileName = file.name;
-            this.errorMessage = '';
+    onDrop(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
 
-            // Auto-fill title if empty
-            if (!this.uploadForm.value.title) {
-                const titleWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-                this.uploadForm.patchValue({ title: titleWithoutExt });
-            }
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            this.handleFile(files[0]);
+        }
+    }
+
+    private handleFile(file: File, input?: HTMLInputElement): void {
+        // Validate file extension
+        const fileExtension = this.getFileExtension(file.name);
+        if (!this.allowedExtensions.includes(fileExtension.toLowerCase())) {
+            this.errorMessage = `File type ${fileExtension} is not allowed. Allowed types: ${this.allowedExtensions.join(
+                ', ',
+            )}`;
+            this.selectedFile = null;
+            this.selectedFileName = '';
+            if (input) input.value = '';
+            return;
+        }
+
+        // Validate file size
+        if (file.size > this.maxFileSize) {
+            this.errorMessage = `File size exceeds maximum allowed size of ${this.formatFileSize(
+                this.maxFileSize,
+            )}`;
+            this.selectedFile = null;
+            this.selectedFileName = '';
+            if (input) input.value = '';
+            return;
+        }
+
+        this.selectedFile = file;
+        this.selectedFileName = file.name;
+        this.errorMessage = '';
+
+        // Auto-fill title if empty
+        if (!this.uploadForm.value.title) {
+            const titleWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+            this.uploadForm.patchValue({ title: titleWithoutExt });
         }
     }
 
