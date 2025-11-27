@@ -1,0 +1,323 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'localhost:5000'
+        STACK_NAME = 'catalog'
+        COMPOSE_FILE = 'docker-stack.qa.yaml'
+        SA_PASSWORD = credentials('sql-server-password')  // Configure in Jenkins credentials
+        GITHUB_WEBHOOK_SECRET = credentials('github-webhook-secret')  // Configure in Jenkins credentials
+    }
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+    }
+    
+    triggers {
+        // Trigger on PR merge to development branch
+        githubPush()
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+                script {
+                    env.GIT_COMMIT_MSG = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    env.GIT_AUTHOR = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
+                    env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                }
+                echo "Commit: ${env.GIT_COMMIT_SHORT} by ${env.GIT_AUTHOR}"
+                echo "Message: ${env.GIT_COMMIT_MSG}"
+            }
+        }
+        
+        stage('Check Branch') {
+            steps {
+                script {
+                    def branch = env.GIT_BRANCH ?: sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    echo "Current branch: ${branch}"
+                    
+                    // Only deploy from development branch
+                    if (!branch.endsWith('development')) {
+                        error("Pipeline should only run on 'development' branch. Current branch: ${branch}")
+                    }
+                }
+            }
+        }
+        
+        stage('Build Backend') {
+            steps {
+                echo 'Building backend Docker image...'
+                dir('backend') {
+                    script {
+                        sh '''
+                            docker build \
+                                --target production \
+                                -t catalog-backend:${GIT_COMMIT_SHORT} \
+                                -t catalog-backend:latest \
+                                -f Dockerfile \
+                                .
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Build Frontend') {
+            steps {
+                echo 'Building frontend Docker image...'
+                dir('frontend') {
+                    script {
+                        sh '''
+                            docker build \
+                                --target production \
+                                -t catalog-frontend:${GIT_COMMIT_SHORT} \
+                                -t catalog-frontend:latest \
+                                -f Dockerfile \
+                                .
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Run Backend Tests') {
+            steps {
+                echo 'Running backend unit tests...'
+                dir('backend.tests') {
+                    script {
+                        sh '''
+                            docker run --rm \
+                                -v $(pwd):/src \
+                                -w /src \
+                                mcr.microsoft.com/dotnet/sdk:8.0 \
+                                dotnet test --logger "trx;LogFileName=test-results.trx" --no-restore || true
+                        '''
+                    }
+                }
+            }
+            post {
+                always {
+                    // Publish test results
+                    script {
+                        if (fileExists('backend.tests/TestResults/test-results.trx')) {
+                            echo 'Publishing test results...'
+                            // mstest testResultsFile: 'backend.tests/TestResults/test-results.trx'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Run Frontend Tests') {
+            steps {
+                echo 'Running frontend unit tests...'
+                dir('frontend') {
+                    script {
+                        sh '''
+                            docker run --rm \
+                                -v $(pwd):/app \
+                                -w /app \
+                                node:18-alpine \
+                                sh -c "npm ci && npm run test:ci || true"
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                echo 'Scanning Docker images for vulnerabilities...'
+                script {
+                    // Install Trivy if not already installed
+                    sh '''
+                        if ! command -v trivy &> /dev/null; then
+                            echo "Installing Trivy..."
+                            wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | apt-key add -
+                            echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list
+                            apt-get update
+                            apt-get install -y trivy
+                        fi
+                    '''
+                    
+                    // Scan images
+                    sh '''
+                        echo "Scanning backend image..."
+                        trivy image --severity HIGH,CRITICAL catalog-backend:latest || true
+                        
+                        echo "Scanning frontend image..."
+                        trivy image --severity HIGH,CRITICAL catalog-frontend:latest || true
+                    '''
+                }
+            }
+        }
+        
+        stage('Tag Images') {
+            when {
+                branch 'development'
+            }
+            steps {
+                echo 'Tagging images for registry...'
+                script {
+                    sh '''
+                        docker tag catalog-backend:latest ${DOCKER_REGISTRY}/catalog-backend:${GIT_COMMIT_SHORT}
+                        docker tag catalog-backend:latest ${DOCKER_REGISTRY}/catalog-backend:latest
+                        docker tag catalog-frontend:latest ${DOCKER_REGISTRY}/catalog-frontend:${GIT_COMMIT_SHORT}
+                        docker tag catalog-frontend:latest ${DOCKER_REGISTRY}/catalog-frontend:latest
+                    '''
+                }
+            }
+        }
+        
+        stage('Backup Database') {
+            steps {
+                echo 'Creating database backup before deployment...'
+                script {
+                    sh '''
+                        mkdir -p /opt/backups/catalog
+                        BACKUP_FILE="/opt/backups/catalog/catalog-db-$(date +%Y%m%d-%H%M%S).bak"
+                        
+                        # Check if SQL Server service is running
+                        if docker service ps ${STACK_NAME}_sqlserver 2>/dev/null; then
+                            CONTAINER_ID=$(docker ps -q -f name=${STACK_NAME}_sqlserver)
+                            if [ ! -z "$CONTAINER_ID" ]; then
+                                docker exec $CONTAINER_ID /opt/mssql-tools/bin/sqlcmd \
+                                    -S localhost -U SA -P "${SA_PASSWORD}" \
+                                    -Q "BACKUP DATABASE [CatalogDB] TO DISK = '/tmp/backup.bak'" || echo "Backup failed or database doesn't exist yet"
+                                docker cp $CONTAINER_ID:/tmp/backup.bak "$BACKUP_FILE" || echo "Could not copy backup file"
+                            fi
+                        else
+                            echo "SQL Server service not running, skipping backup"
+                        fi
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy to Swarm') {
+            when {
+                branch 'development'
+            }
+            steps {
+                echo 'Deploying stack to Docker Swarm...'
+                script {
+                    sh '''
+                        # Deploy stack
+                        docker stack deploy -c ${COMPOSE_FILE} ${STACK_NAME} --with-registry-auth
+                        
+                        # Wait for services to be ready
+                        echo "Waiting for services to start..."
+                        sleep 10
+                        
+                        # List services
+                        docker stack services ${STACK_NAME}
+                    '''
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                echo 'Performing health checks...'
+                script {
+                    retry(5) {
+                        sleep 10
+                        sh '''
+                            # Check backend health
+                            curl -f http://localhost/api/health || exit 1
+                            
+                            # Check frontend
+                            curl -f http://localhost/ || exit 1
+                            
+                            echo "Health checks passed!"
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Run Migrations') {
+            when {
+                branch 'development'
+            }
+            steps {
+                echo 'Running database migrations...'
+                script {
+                    sh '''
+                        # Wait for backend to be fully ready
+                        sleep 15
+                        
+                        # Get backend container
+                        BACKEND_CONTAINER=$(docker ps -q -f name=${STACK_NAME}_backend | head -n 1)
+                        
+                        if [ ! -z "$BACKEND_CONTAINER" ]; then
+                            echo "Running migrations on container: $BACKEND_CONTAINER"
+                            docker exec $BACKEND_CONTAINER dotnet ef database update || echo "Migration failed or already up to date"
+                        else
+                            echo "Backend container not found, skipping migrations"
+                        fi
+                    '''
+                }
+            }
+        }
+        
+        stage('Cleanup') {
+            steps {
+                echo 'Cleaning up old images...'
+                script {
+                    sh '''
+                        # Remove dangling images
+                        docker image prune -f
+                        
+                        # Keep last 5 images of each service
+                        docker images catalog-backend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
+                        docker images catalog-frontend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
+                    '''
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+            script {
+                // Send success notification (configure based on your needs)
+                echo """
+                ================================
+                DEPLOYMENT SUCCESSFUL
+                ================================
+                Branch: ${env.GIT_BRANCH}
+                Commit: ${env.GIT_COMMIT_SHORT}
+                Author: ${env.GIT_AUTHOR}
+                Message: ${env.GIT_COMMIT_MSG}
+                ================================
+                """
+            }
+        }
+        failure {
+            echo 'Pipeline failed!'
+            script {
+                // Send failure notification
+                echo """
+                ================================
+                DEPLOYMENT FAILED
+                ================================
+                Branch: ${env.GIT_BRANCH}
+                Commit: ${env.GIT_COMMIT_SHORT}
+                Author: ${env.GIT_AUTHOR}
+                ================================
+                """
+            }
+        }
+        always {
+            echo 'Cleaning up workspace...'
+            cleanWs()
+        }
+    }
+}

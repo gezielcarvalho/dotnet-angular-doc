@@ -1,0 +1,68 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: catalog-sqlserver-qa
+    ports:
+      - "14333:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE}
+      - MSSQL_PID=Developer
+    volumes:
+      - sqlserver-data-qa:/var/opt/mssql
+    networks:
+      - catalog-network-qa
+    restart: always
+    healthcheck:
+      test:
+        ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/localhost/1433' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: catalog-backend-qa
+    ports:
+      - "5175:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;
+    networks:
+      - catalog-network-qa
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: catalog-frontend-qa
+    ports:
+      - "4200:80"
+    networks:
+      - catalog-network-qa
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  sqlserver-data-qa:
+
+networks:
+  catalog-network-qa:
+    driver: bridge
