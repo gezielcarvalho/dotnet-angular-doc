@@ -18,6 +18,8 @@ This folder contains application-specific deployment guides and configuration fi
 
 - **.env.template** - Application environment variables template
 - **server-config.template.sh** - Server configuration template
+- **nginx-qa.conf** - Nginx reverse proxy for Docker Compose setup
+- **nginx-swarm.conf** - Nginx reverse proxy for Docker Swarm deployment
 
 ---
 
