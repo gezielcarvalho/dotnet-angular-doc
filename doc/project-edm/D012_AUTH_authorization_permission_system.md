@@ -103,13 +103,13 @@ namespace Backend.Services
 {
     public class PermissionService : IPermissionService
     {
-        private readonly EdmDbContext _context;
+        private readonly DocumentDbContext _context;
         private readonly IMemoryCache _cache;
         private readonly ILogger<PermissionService> _logger;
         private const int CacheExpirationMinutes = 15;
 
         public PermissionService(
-            EdmDbContext context,
+            DocumentDbContext context,
             IMemoryCache cache,
             ILogger<PermissionService> logger)
         {

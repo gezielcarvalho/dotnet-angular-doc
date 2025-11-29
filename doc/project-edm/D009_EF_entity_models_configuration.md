@@ -627,7 +627,7 @@ namespace Backend.Models
 
 ## Entity Framework DbContext
 
-### EdmDbContext
+### DocumentDbContext
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
@@ -636,9 +636,9 @@ using Backend.Models.Common;
 
 namespace Backend.Data
 {
-    public class EdmDbContext : DbContext
+    public class DocumentDbContext : DbContext
     {
-        public EdmDbContext(DbContextOptions<EdmDbContext> options) : base(options)
+        public DocumentDbContext(DbContextOptions<DocumentDbContext> options) : base(options)
         {
         }
 
@@ -1006,19 +1006,19 @@ namespace Backend.Data
 
 ```bash
 # Add migration
-dotnet ef migrations add InitialCreate --context EdmDbContext
+dotnet ef migrations add InitialCreate --context DocumentDbContext
 
 # Update database
-dotnet ef database update --context EdmDbContext
+dotnet ef database update --context DocumentDbContext
 
 # Generate SQL script
-dotnet ef migrations script --context EdmDbContext --output migration.sql
+dotnet ef migrations script --context DocumentDbContext --output migration.sql
 ```
 
 ### Seed Data
 
 ```csharp
-// Add to EdmDbContext OnModelCreating
+// Add to DocumentDbContext OnModelCreating
 private void SeedData(ModelBuilder modelBuilder)
 {
     // Default admin user

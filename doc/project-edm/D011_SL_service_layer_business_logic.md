@@ -187,7 +187,7 @@ namespace Backend.Services
 {
     public class DocumentService : IDocumentService
     {
-        private readonly EdmDbContext _context;
+        private readonly DocumentDbContext _context;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
         private readonly IFileStorageService _fileStorageService;
@@ -195,7 +195,7 @@ namespace Backend.Services
         private readonly ILogger<DocumentService> _logger;
 
         public DocumentService(
-            EdmDbContext context,
+            DocumentDbContext context,
             IMapper mapper,
             IPermissionService permissionService,
             IFileStorageService fileStorageService,
@@ -756,14 +756,14 @@ namespace Backend.Services
 {
     public class FolderService : IFolderService
     {
-        private readonly EdmDbContext _context;
+        private readonly DocumentDbContext _context;
         private readonly IMapper _mapper;
         private readonly IPermissionService _permissionService;
         private readonly IAuditService _auditService;
         private readonly ILogger<FolderService> _logger;
 
         public FolderService(
-            EdmDbContext context,
+            DocumentDbContext context,
             IMapper mapper,
             IPermissionService permissionService,
             IAuditService auditService,
@@ -1075,13 +1075,13 @@ namespace Backend.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly EdmDbContext _context;
+        private readonly DocumentDbContext _context;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
-            EdmDbContext context,
+            DocumentDbContext context,
             IMapper mapper,
             IConfiguration configuration,
             ILogger<AuthService> logger)
