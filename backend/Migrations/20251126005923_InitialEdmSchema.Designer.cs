@@ -25,7 +25,7 @@ namespace Backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Backend.Models.EDM.AuditLog", b =>
+            modelBuilder.Entity("Backend.Models.Document.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -86,7 +86,7 @@ namespace Backend.Migrations
                     b.ToTable("AuditLogs");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Comment", b =>
+            modelBuilder.Entity("Backend.Models.Document.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -142,7 +142,7 @@ namespace Backend.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Document", b =>
+            modelBuilder.Entity("Backend.Models.Document.Document", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -239,7 +239,7 @@ namespace Backend.Migrations
                     b.ToTable("Documents");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.DocumentTag", b =>
+            modelBuilder.Entity("Backend.Models.Document.DocumentTag", b =>
                 {
                     b.Property<Guid>("DocumentId")
                         .HasColumnType("uniqueidentifier");
@@ -254,7 +254,7 @@ namespace Backend.Migrations
                     b.ToTable("DocumentTags");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.DocumentVersion", b =>
+            modelBuilder.Entity("Backend.Models.Document.DocumentVersion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -308,7 +308,7 @@ namespace Backend.Migrations
                     b.ToTable("DocumentVersions");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Folder", b =>
+            modelBuilder.Entity("Backend.Models.Document.Folder", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -388,7 +388,7 @@ namespace Backend.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Notification", b =>
+            modelBuilder.Entity("Backend.Models.Document.Notification", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -449,7 +449,7 @@ namespace Backend.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Permission", b =>
+            modelBuilder.Entity("Backend.Models.Document.Permission", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -509,7 +509,7 @@ namespace Backend.Migrations
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Tag", b =>
+            modelBuilder.Entity("Backend.Models.Document.Tag", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -591,7 +591,7 @@ namespace Backend.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.User", b =>
+            modelBuilder.Entity("Backend.Models.Document.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -688,7 +688,7 @@ namespace Backend.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Workflow", b =>
+            modelBuilder.Entity("Backend.Models.Document.Workflow", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -756,7 +756,7 @@ namespace Backend.Migrations
                     b.ToTable("Workflows");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.WorkflowStep", b =>
+            modelBuilder.Entity("Backend.Models.Document.WorkflowStep", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -817,20 +817,20 @@ namespace Backend.Migrations
                     b.ToTable("WorkflowSteps");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Comment", b =>
+            modelBuilder.Entity("Backend.Models.Document.Comment", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Document", "Document")
+                    b.HasOne("Backend.Models.Document.Document", "Document")
                         .WithMany("Comments")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.Comment", "ParentComment")
+                    b.HasOne("Backend.Models.Document.Comment", "ParentComment")
                         .WithMany("Replies")
                         .HasForeignKey("ParentCommentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Backend.Models.EDM.User", "User")
+                    b.HasOne("Backend.Models.Document.User", "User")
                         .WithMany("Comments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -843,15 +843,15 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Document", b =>
+            modelBuilder.Entity("Backend.Models.Document.Document", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Folder", "Folder")
+                    b.HasOne("Backend.Models.Document.Folder", "Folder")
                         .WithMany("Documents")
                         .HasForeignKey("FolderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.User", "Owner")
+                    b.HasOne("Backend.Models.Document.User", "Owner")
                         .WithMany("OwnedDocuments")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -862,15 +862,15 @@ namespace Backend.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.DocumentTag", b =>
+            modelBuilder.Entity("Backend.Models.Document.DocumentTag", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Document", "Document")
+                    b.HasOne("Backend.Models.Document.Document", "Document")
                         .WithMany("DocumentTags")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.Tag", "Tag")
+                    b.HasOne("Backend.Models.Document.Tag", "Tag")
                         .WithMany("DocumentTags")
                         .HasForeignKey("TagId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -881,9 +881,9 @@ namespace Backend.Migrations
                     b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.DocumentVersion", b =>
+            modelBuilder.Entity("Backend.Models.Document.DocumentVersion", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Document", "Document")
+                    b.HasOne("Backend.Models.Document.Document", "Document")
                         .WithMany("Versions")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -892,15 +892,15 @@ namespace Backend.Migrations
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Folder", b =>
+            modelBuilder.Entity("Backend.Models.Document.Folder", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.User", "Owner")
+                    b.HasOne("Backend.Models.Document.User", "Owner")
                         .WithMany("OwnedFolders")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.Folder", "ParentFolder")
+                    b.HasOne("Backend.Models.Document.Folder", "ParentFolder")
                         .WithMany("SubFolders")
                         .HasForeignKey("ParentFolderId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -910,19 +910,19 @@ namespace Backend.Migrations
                     b.Navigation("ParentFolder");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Permission", b =>
+            modelBuilder.Entity("Backend.Models.Document.Permission", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Document", "Document")
+                    b.HasOne("Backend.Models.Document.Document", "Document")
                         .WithMany("Permissions")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Backend.Models.EDM.Folder", "Folder")
+                    b.HasOne("Backend.Models.Document.Folder", "Folder")
                         .WithMany("Permissions")
                         .HasForeignKey("FolderId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Backend.Models.EDM.User", "User")
+                    b.HasOne("Backend.Models.Document.User", "User")
                         .WithMany("Permissions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -935,30 +935,30 @@ namespace Backend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Workflow", b =>
+            modelBuilder.Entity("Backend.Models.Document.Workflow", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.Document", "Document")
+                    b.HasOne("Backend.Models.Document.Document", "Document")
                         .WithMany("Workflows")
                         .HasForeignKey("DocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.User", null)
+                    b.HasOne("Backend.Models.Document.User", null)
                         .WithMany("InitiatedWorkflows")
                         .HasForeignKey("UserId");
 
                     b.Navigation("Document");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.WorkflowStep", b =>
+            modelBuilder.Entity("Backend.Models.Document.WorkflowStep", b =>
                 {
-                    b.HasOne("Backend.Models.EDM.User", "AssignedToUser")
+                    b.HasOne("Backend.Models.Document.User", "AssignedToUser")
                         .WithMany("AssignedWorkflowSteps")
                         .HasForeignKey("AssignedToUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Backend.Models.EDM.Workflow", "Workflow")
+                    b.HasOne("Backend.Models.Document.Workflow", "Workflow")
                         .WithMany("Steps")
                         .HasForeignKey("WorkflowId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -969,12 +969,12 @@ namespace Backend.Migrations
                     b.Navigation("Workflow");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Comment", b =>
+            modelBuilder.Entity("Backend.Models.Document.Comment", b =>
                 {
                     b.Navigation("Replies");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Document", b =>
+            modelBuilder.Entity("Backend.Models.Document.Document", b =>
                 {
                     b.Navigation("Comments");
 
@@ -987,7 +987,7 @@ namespace Backend.Migrations
                     b.Navigation("Workflows");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Folder", b =>
+            modelBuilder.Entity("Backend.Models.Document.Folder", b =>
                 {
                     b.Navigation("Documents");
 
@@ -996,12 +996,12 @@ namespace Backend.Migrations
                     b.Navigation("SubFolders");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Tag", b =>
+            modelBuilder.Entity("Backend.Models.Document.Tag", b =>
                 {
                     b.Navigation("DocumentTags");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.User", b =>
+            modelBuilder.Entity("Backend.Models.Document.User", b =>
                 {
                     b.Navigation("AssignedWorkflowSteps");
 
@@ -1016,7 +1016,7 @@ namespace Backend.Migrations
                     b.Navigation("Permissions");
                 });
 
-            modelBuilder.Entity("Backend.Models.EDM.Workflow", b =>
+            modelBuilder.Entity("Backend.Models.Document.Workflow", b =>
                 {
                     b.Navigation("Steps");
                 });

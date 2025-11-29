@@ -1,5 +1,5 @@
 using Backend.Models.DTO.Auth;
-using Backend.Models.EDM;
+using Backend.Models.Document;
 
 namespace Backend.Services.Interfaces;
 

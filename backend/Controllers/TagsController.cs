@@ -1,7 +1,7 @@
 ﻿using Backend.Data;
 using Backend.Models.DTO.Common;
 using Backend.Models.DTO.Tags;
-using Backend.Models.EDM;
+using Backend.Models.Document;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

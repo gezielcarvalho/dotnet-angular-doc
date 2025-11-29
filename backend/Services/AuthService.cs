@@ -1,6 +1,6 @@
 using Backend.Data;
 using Backend.Models.DTO.Auth;
-using Backend.Models.EDM;
+using Backend.Models.Document;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

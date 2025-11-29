@@ -1,6 +1,6 @@
 using Backend.Data;
 using Backend.Models.DTO.Permissions;
-using Backend.Models.EDM;
+using Backend.Models.Document;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

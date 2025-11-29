@@ -1,4 +1,4 @@
-namespace Backend.Models.EDM
+namespace Backend.Models.Document
 {
     public class Notification : BaseEntity
     {

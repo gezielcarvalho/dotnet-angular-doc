@@ -1,8 +1,8 @@
 using Backend.Models;
 using Microsoft.EntityFrameworkCore;
-using EdmUser = Backend.Models.EDM.User;
-using EdmTag = Backend.Models.EDM.Tag;
-using Backend.Models.EDM;
+using EdmUser = Backend.Models.Document.User;
+using EdmTag = Backend.Models.Document.Tag;
+using Backend.Models.Document;
 
 namespace Backend.Data
 {

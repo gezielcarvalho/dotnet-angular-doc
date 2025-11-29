@@ -61,9 +61,9 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
-        Title = "EDM API",
+        Title = "Document API",
         Version = "v1",
-        Description = "Enterprise Document Management System API"
+        Description = "Document Management API"
     });
 });
 

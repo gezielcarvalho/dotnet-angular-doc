@@ -1,7 +1,7 @@
 using Backend.Data;
 using Backend.Models.DTO.Common;
 using Backend.Models.DTO.Documents;
-using Backend.Models.EDM;
+using Backend.Models.Document;
 using Backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
