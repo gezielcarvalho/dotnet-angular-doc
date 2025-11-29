@@ -1,8 +1,6 @@
 using Backend.Models;
-using Microsoft.EntityFrameworkCore;
-using EdmUser = Backend.Models.Document.User;
-using EdmTag = Backend.Models.Document.Tag;
 using Backend.Models.Document;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Data
 {
@@ -13,11 +11,11 @@ namespace Backend.Data
         }
         
         // DbSets
-        public DbSet<EdmUser> Users { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
         public DbSet<Folder> Folders { get; set; } = null!;
         public DbSet<Document> Documents { get; set; } = null!;
         public DbSet<DocumentVersion> DocumentVersions { get; set; } = null!;
-        public DbSet<EdmTag> Tags { get; set; } = null!;
+        public DbSet<Tag> Tags { get; set; } = null!;
         public DbSet<DocumentTag> DocumentTags { get; set; } = null!;
         public DbSet<Permission> Permissions { get; set; } = null!;
         public DbSet<Comment> Comments { get; set; } = null!;
@@ -67,10 +65,10 @@ namespace Backend.Data
             ConfigureNotification(modelBuilder);
             
             // Global query filters for soft delete
-            modelBuilder.Entity<EdmUser>().HasQueryFilter(u => !u.IsDeleted);
+            modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
             modelBuilder.Entity<Folder>().HasQueryFilter(f => !f.IsDeleted);
             modelBuilder.Entity<Document>().HasQueryFilter(d => !d.IsDeleted);
-            modelBuilder.Entity<EdmTag>().HasQueryFilter(t => !t.IsDeleted);
+            modelBuilder.Entity<Tag>().HasQueryFilter(t => !t.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
             
             // Seed data
@@ -79,7 +77,7 @@ namespace Backend.Data
         
         private void ConfigureUser(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EdmUser>(entity =>
+            modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
@@ -172,7 +170,7 @@ namespace Backend.Data
         
         private void ConfigureTag(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EdmTag>(entity =>
+            modelBuilder.Entity<Tag>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
@@ -342,7 +340,7 @@ namespace Backend.Data
         {
             // Create admin user
             var adminId = Guid.NewGuid();
-            modelBuilder.Entity<EdmUser>().HasData(new EdmUser
+            modelBuilder.Entity<User>().HasData(new User
             {
                 Id = adminId,
                 Username = "admin",
@@ -374,8 +372,8 @@ namespace Backend.Data
             });
             
             // Seed default tags
-            modelBuilder.Entity<EdmTag>().HasData(
-                new EdmTag
+            modelBuilder.Entity<Tag>().HasData(
+                new Tag
                 {
                     Id = Guid.NewGuid(),
                     Name = "Important",
@@ -385,7 +383,7 @@ namespace Backend.Data
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = "System"
                 },
-                new EdmTag
+                new Tag
                 {
                     Id = Guid.NewGuid(),
                     Name = "Draft",
@@ -395,7 +393,7 @@ namespace Backend.Data
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = "System"
                 },
-                new EdmTag
+                new Tag
                 {
                     Id = Guid.NewGuid(),
                     Name = "Final",
