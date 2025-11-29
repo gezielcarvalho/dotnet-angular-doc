@@ -36,13 +36,13 @@ describe('TokenService', () => {
             const token = 'test-token-123';
             service.saveToken(token);
             expect(localStorage.setItem).toHaveBeenCalledWith(
-                'edm_auth_token',
+                'document_auth_token',
                 token,
             );
         });
 
         it('should get token from localStorage', () => {
-            localStorageMock['edm_auth_token'] = 'test-token-123';
+            localStorageMock['document_auth_token'] = 'test-token-123';
             const token = service.getToken();
             expect(token).toBe('test-token-123');
         });
@@ -53,10 +53,10 @@ describe('TokenService', () => {
         });
 
         it('should remove token from localStorage', () => {
-            localStorageMock['edm_auth_token'] = 'test-token-123';
+            localStorageMock['document_auth_token'] = 'test-token-123';
             service.removeToken();
             expect(localStorage.removeItem).toHaveBeenCalledWith(
-                'edm_auth_token',
+                'document_auth_token',
             );
         });
     });
@@ -70,14 +70,14 @@ describe('TokenService', () => {
             };
             service.saveUser(user);
             expect(localStorage.setItem).toHaveBeenCalledWith(
-                'edm_user_info',
+                'document_user_info',
                 JSON.stringify(user),
             );
         });
 
         it('should get user from localStorage', () => {
             const user = { id: '1', username: 'testuser' };
-            localStorageMock['edm_user_info'] = JSON.stringify(user);
+            localStorageMock['document_user_info'] = JSON.stringify(user);
             const retrievedUser = service.getUser();
             expect(retrievedUser).toEqual(user);
         });
@@ -90,7 +90,7 @@ describe('TokenService', () => {
         it('should remove user from localStorage', () => {
             service.removeUser();
             expect(localStorage.removeItem).toHaveBeenCalledWith(
-                'edm_user_info',
+                'document_user_info',
             );
         });
     });
@@ -99,10 +99,10 @@ describe('TokenService', () => {
         it('should clear both token and user', () => {
             service.clear();
             expect(localStorage.removeItem).toHaveBeenCalledWith(
-                'edm_auth_token',
+                'document_auth_token',
             );
             expect(localStorage.removeItem).toHaveBeenCalledWith(
-                'edm_user_info',
+                'document_user_info',
             );
         });
     });
@@ -117,7 +117,7 @@ describe('TokenService', () => {
             const expiredTime = Math.floor(Date.now() / 1000) - 3600;
             const payload = btoa(JSON.stringify({ exp: expiredTime }));
             const token = `header.${payload}.signature`;
-            localStorageMock['edm_auth_token'] = token;
+            localStorageMock['document_auth_token'] = token;
 
             expect(service.isTokenExpired()).toBe(true);
         });
@@ -127,7 +127,7 @@ describe('TokenService', () => {
             const futureTime = Math.floor(Date.now() / 1000) + 3600;
             const payload = btoa(JSON.stringify({ exp: futureTime }));
             const token = `header.${payload}.signature`;
-            localStorageMock['edm_auth_token'] = token;
+            localStorageMock['document_auth_token'] = token;
 
             expect(service.isTokenExpired()).toBe(false);
         });
@@ -135,13 +135,13 @@ describe('TokenService', () => {
         it('should return false for token without expiration', () => {
             const payload = btoa(JSON.stringify({ userId: '123' }));
             const token = `header.${payload}.signature`;
-            localStorageMock['edm_auth_token'] = token;
+            localStorageMock['document_auth_token'] = token;
 
             expect(service.isTokenExpired()).toBe(false);
         });
 
         it('should return true for invalid token format', () => {
-            localStorageMock['edm_auth_token'] = 'invalid-token';
+            localStorageMock['document_auth_token'] = 'invalid-token';
             expect(service.isTokenExpired()).toBe(true);
         });
     });

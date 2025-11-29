@@ -4,8 +4,8 @@ import { Injectable } from '@angular/core';
     providedIn: 'root',
 })
 export class TokenService {
-    private readonly TOKEN_KEY = 'edm_auth_token';
-    private readonly USER_KEY = 'edm_user_info';
+    private readonly TOKEN_KEY = 'document_auth_token';
+    private readonly USER_KEY = 'document_user_info';
 
     saveToken(token: string): void {
         localStorage.setItem(this.TOKEN_KEY, token);

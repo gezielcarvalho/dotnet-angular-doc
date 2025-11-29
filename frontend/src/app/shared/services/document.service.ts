@@ -11,7 +11,7 @@ import {
     PagedResponse,
     ApiResponse,
     DocumentFilterParams,
-} from '../models/edm.models';
+} from '../models/document.models';
 
 @Injectable({
     providedIn: 'root',

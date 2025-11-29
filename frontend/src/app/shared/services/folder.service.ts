@@ -8,7 +8,7 @@ import {
     UpdateFolderRequest,
     ApiResponse,
     FolderFilterParams,
-} from '../models/edm.models';
+} from '../models/document.models';
 
 @Injectable({
     providedIn: 'root',

@@ -16,7 +16,7 @@ export const routes: Route[] = [
             ),
     },
     {
-        path: 'edm',
+        path: 'document',
         canActivate: [AuthGuard],
         children: [
             {
@@ -28,14 +28,14 @@ export const routes: Route[] = [
                 path: 'documents',
                 loadComponent: () =>
                     import(
-                        './edm/components/document-list/document-list.component'
+                        './document/components/document-list/document-list.component'
                     ).then(m => m.DocumentListComponent),
             },
             {
                 path: 'documents/upload',
                 loadComponent: () =>
                     import(
-                        './edm/components/upload-document/upload-document.component'
+                        './document/components/upload-document/upload-document.component'
                     ).then(m => m.UploadDocumentComponent),
             },
         ],
