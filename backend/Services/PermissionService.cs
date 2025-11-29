@@ -8,9 +8,9 @@ namespace Backend.Services;
 
 public class PermissionService : IPermissionService
 {
-    private readonly EdmDbContext _context;
+    private readonly DocumentDbContext _context;
 
-    public PermissionService(EdmDbContext context)
+    public PermissionService(DocumentDbContext context)
     {
         _context = context;
     }

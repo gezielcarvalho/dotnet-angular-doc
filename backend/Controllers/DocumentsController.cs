@@ -15,12 +15,12 @@ namespace Backend.Controllers;
 [Route("api/[controller]")]
 public class DocumentsController : ControllerBase
 {
-    private readonly EdmDbContext _context;
+    private readonly DocumentDbContext _context;
     private readonly IPermissionService _permissionService;
     private readonly IFileStorageService _fileStorageService;
 
     public DocumentsController(
-        EdmDbContext context,
+        DocumentDbContext context,
         IPermissionService permissionService,
         IFileStorageService fileStorageService)
     {

@@ -5,18 +5,18 @@ namespace backend.tests.Helpers;
 
 public static class DbContextHelper
 {
-    public static EdmDbContext GetInMemoryDbContext(string dbName = null)
+    public static DocumentDbContext GetInMemoryDbContext(string dbName = null)
     {
-        var options = new DbContextOptionsBuilder<EdmDbContext>()
+        var options = new DbContextOptionsBuilder<DocumentDbContext>()
             .UseInMemoryDatabase(databaseName: dbName ?? Guid.NewGuid().ToString())
             .Options;
 
-        var context = new EdmDbContext(options);
+        var context = new DocumentDbContext(options);
         context.Database.EnsureCreated();
         return context;
     }
 
-    public static void CleanupDbContext(EdmDbContext context)
+    public static void CleanupDbContext(DocumentDbContext context)
     {
         context.Database.EnsureDeleted();
         context.Dispose();

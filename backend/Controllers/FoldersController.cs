@@ -15,10 +15,10 @@ namespace Backend.Controllers;
 [Route("api/[controller]")]
 public class FoldersController : ControllerBase
 {
-    private readonly EdmDbContext _context;
+    private readonly DocumentDbContext _context;
     private readonly IPermissionService _permissionService;
 
-    public FoldersController(EdmDbContext context, IPermissionService permissionService)
+    public FoldersController(DocumentDbContext context, IPermissionService permissionService)
     {
         _context = context;
         _permissionService = permissionService;

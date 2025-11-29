@@ -12,10 +12,10 @@ namespace Backend.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly EdmDbContext _context;
+    private readonly DocumentDbContext _context;
     private readonly IConfiguration _configuration;
 
-    public AuthService(EdmDbContext context, IConfiguration configuration)
+    public AuthService(DocumentDbContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;

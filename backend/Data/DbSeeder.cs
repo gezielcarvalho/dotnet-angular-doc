@@ -5,7 +5,7 @@ namespace Backend.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(EdmDbContext context)
+    public static async Task SeedAsync(DocumentDbContext context)
     {
         // Check if we already have data
         if (await context.Users.AnyAsync())

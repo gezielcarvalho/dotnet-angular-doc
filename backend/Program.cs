@@ -15,7 +15,7 @@ builder.Services.AddControllers().AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 // Database
-builder.Services.AddDbContext<EdmDbContext>(options =>
+builder.Services.AddDbContext<DocumentDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DockerConnection")));
 
 // AutoMapper
@@ -72,7 +72,7 @@ var app = builder.Build();
 // Apply migrations and seed data automatically on startup
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<EdmDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
     db.Database.Migrate();
     await DbSeeder.SeedAsync(db);
 }

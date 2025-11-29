@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Backend.Migrations
 {
-    [DbContext(typeof(EdmDbContext))]
+    [DbContext(typeof(DocumentDbContext))]
     [Migration("20251126005923_InitialEdmSchema")]
     partial class InitialEdmSchema
     {

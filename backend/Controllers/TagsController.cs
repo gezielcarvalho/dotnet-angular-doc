@@ -14,9 +14,9 @@ namespace Backend.Controllers;
 [Route("api/[controller]")]
 public class TagsController : ControllerBase
 {
-    private readonly EdmDbContext _context;
+    private readonly DocumentDbContext _context;
 
-    public TagsController(EdmDbContext context)
+    public TagsController(DocumentDbContext context)
     {
         _context = context;
     }

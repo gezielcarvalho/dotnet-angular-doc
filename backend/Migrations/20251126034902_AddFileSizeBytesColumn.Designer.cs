@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Backend.Migrations
 {
-    [DbContext(typeof(EdmDbContext))]
+    [DbContext(typeof(DocumentDbContext))]
     [Migration("20251126034902_AddFileSizeBytesColumn")]
     partial class AddFileSizeBytesColumn
     {

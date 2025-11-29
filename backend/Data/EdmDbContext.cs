@@ -6,9 +6,9 @@ using Backend.Models.Document;
 
 namespace Backend.Data
 {
-    public class EdmDbContext : DbContext
+    public class DocumentDbContext : DbContext
     {
-        public EdmDbContext(DbContextOptions<EdmDbContext> options) : base(options)
+        public DocumentDbContext(DbContextOptions<DocumentDbContext> options) : base(options)
         {
         }
         
