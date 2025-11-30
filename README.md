@@ -1,6 +1,6 @@
-# dotnet-angular-catalog
+# dotnet-angular-edm
 
-A full-stack catalog management application built with .NET 8 and Angular 17. The solution provides a RESTful API for managing products, categories, posts, tags, and users with a modern Angular frontend.
+A full-stack edm management application built with .NET 8 and Angular 17. The solution provides a RESTful API for managing products, categories, posts, tags, and users with a modern Angular frontend.
 
 ## Projects
 

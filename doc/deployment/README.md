@@ -97,7 +97,7 @@ chmod +x deploy-app.sh backup-db.sh
 
 2. **Create Jenkins job:**
 
-   - Name: `catalog-deployment`
+   - Name: `edm-deployment`
    - Type: Pipeline
    - SCM: Git (your repo)
    - Branch: `*/development`
@@ -130,15 +130,15 @@ chmod +x deploy-app.sh backup-db.sh
 ### View Logs
 
 ```bash
-docker service logs catalog_backend -f
-docker service logs catalog_frontend -f
+docker service logs edm_backend -f
+docker service logs edm_frontend -f
 ```
 
 ### Scale Services
 
 ```bash
-docker service scale catalog_backend=3
-docker service scale catalog_frontend=2
+docker service scale edm_backend=3
+docker service scale edm_frontend=2
 ```
 
 ### Backup Database
@@ -150,8 +150,8 @@ docker service scale catalog_frontend=2
 ### Update Application
 
 ```bash
-cd /opt/apps/catalog
-docker stack deploy -c docker-stack.qa.yaml catalog
+cd /opt/apps/edm
+docker stack deploy -c docker-stack.qa.yaml edm
 ```
 
 ---
