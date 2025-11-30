@@ -4,7 +4,7 @@ import {
     HttpTestingController,
 } from '@angular/common/http/testing';
 import { AdminService } from './admin.service';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../environments/environment';
 
 describe('AdminService', () => {
     let service: AdminService;
