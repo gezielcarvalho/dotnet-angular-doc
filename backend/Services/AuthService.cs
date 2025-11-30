@@ -15,12 +15,14 @@ public class AuthService : IAuthService
     private readonly DocumentDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly Backend.Services.Interfaces.IEmailService _emailService;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(DocumentDbContext context, IConfiguration configuration, Backend.Services.Interfaces.IEmailService emailService)
+    public AuthService(DocumentDbContext context, IConfiguration configuration, Backend.Services.Interfaces.IEmailService emailService, ILogger<AuthService> logger)
     {
         _context = context;
         _configuration = configuration;
         _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
@@ -206,11 +208,26 @@ public class AuthService : IAuthService
         _context.PasswordResetTokens.Add(prt);
         await _context.SaveChangesAsync();
 
-        var resetLink = origin?.TrimEnd('/') + $"/reset-password?token={token}";
+        // Sanitize origin and fallback to configured Frontend Url if not present/valid
+        string baseOrigin = origin?.Trim() ?? string.Empty;
+        var configuredFrontendUrl = _configuration["Frontend:Url"] ?? "http://localhost:4200";
+        if (!Uri.TryCreate(baseOrigin, UriKind.Absolute, out var baseUri))
+        {
+            _logger.LogWarning("Invalid origin provided for password reset: {Origin}. Falling back to configured frontend URL {FrontendUrl}", baseOrigin, configuredFrontendUrl);
+            baseUri = new Uri(configuredFrontendUrl);
+        }
+        var tokenEncoded = System.Net.WebUtility.UrlEncode(token);
+        var resetUri = new Uri(baseUri, $"/reset-password?token={tokenEncoded}");
+        var resetLink = resetUri.ToString();
         var subject = "Password reset request";
+        // Include an explicit plaintext link as a fallback for email clients that corrupt anchors
         var body = $"<p>We received a request to reset your password. Click the link below to reset it (link expires in 1 hour):</p>" +
-                   $"<p><a href=\"{resetLink}\">Reset Password</a></p>" +
-                   $"<p>If you didn't request this, ignore this email.</p>";
+               $"<p><a href=\"{resetLink}\">Reset Password</a></p>" +
+               $"<p>Or paste this link into your browser: {resetLink}</p>" +
+               $"<p>If you didn't request this, ignore this email.</p>";
+
+        _logger.LogInformation("RequestPasswordReset: Email={Email}, Origin={Origin}, ResetLink={ResetLink}", user.Email, origin, resetLink);
+        _logger.LogDebug("RequestPasswordReset body: {Body}", body);
 
         await _emailService.SendEmailAsync(user.Email, subject, body);
 

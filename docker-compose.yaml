@@ -33,9 +33,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
       - DOTNET_USE_POLLING_FILE_WATCHER=1
-        - SMTP__Host=mailhog
-        - SMTP__Port=1025
-        - SMTP__UseSsl=false
+      - SMTP__Host=mailhog
+      - SMTP__Port=1025
+      - SMTP__UseSsl=false
     volumes:
       - ./backend:/src
       - backend-nuget:/root/.nuget/packages
