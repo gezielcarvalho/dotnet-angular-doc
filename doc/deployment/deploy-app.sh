@@ -37,7 +37,7 @@ if [ -f "./server-config.sh" ]; then
     log "Loaded server configuration"
 else
     warning "server-config.sh not found, using defaults"
-    APP_DIR="/opt/apps/catalog"
+    APP_DIR="/opt/apps/edm"
 fi
 
 # Load environment variables if exists
@@ -93,16 +93,16 @@ cd "$APP_DIR"
 log "Changed to application directory: $APP_DIR"
 
 # Check if stack is already deployed
-STACK_NAME="catalog"
+STACK_NAME="edm"
 if docker stack ls | grep -q "$STACK_NAME"; then
     log "Stack '$STACK_NAME' already exists, updating..."
     
     # Backup database before update
     log "Creating database backup before update..."
-    BACKUP_DIR="/opt/backups/catalog"
+    BACKUP_DIR="/opt/backups/edm"
     mkdir -p "$BACKUP_DIR"
     
-    SQLSERVER_CONTAINER=$(docker ps -q -f name=catalog_sqlserver 2>/dev/null || echo "")
+    SQLSERVER_CONTAINER=$(docker ps -q -f name=edm_sqlserver 2>/dev/null || echo "")
     if [ ! -z "$SQLSERVER_CONTAINER" ]; then
         BACKUP_FILE="$BACKUP_DIR/pre-update-$(date +%Y%m%d-%H%M%S).bak"
         docker exec $SQLSERVER_CONTAINER /opt/mssql-tools/bin/sqlcmd \
@@ -143,7 +143,7 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
     RETRY_COUNT=$((RETRY_COUNT+1))
     if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
         warning "Backend health check timeout after $MAX_RETRIES attempts"
-        warning "Check logs with: docker service logs catalog_backend"
+        warning "Check logs with: docker service logs edm_backend"
     else
         sleep 2
     fi
@@ -152,17 +152,17 @@ done
 # Run database migrations
 log "Checking for backend container to run migrations..."
 sleep 5
-BACKEND_CONTAINER=$(docker ps -q -f name=catalog_backend | head -n 1)
+BACKEND_CONTAINER=$(docker ps -q -f name=edm_backend | head -n 1)
 if [ ! -z "$BACKEND_CONTAINER" ]; then
     log "Running database migrations..."
     docker exec $BACKEND_CONTAINER dotnet ef database update || {
         warning "Database migration failed or already up to date"
-        info "Check migrations with: docker service logs catalog_backend"
+        info "Check migrations with: docker service logs edm_backend"
     }
 else
     warning "Backend container not found, skipping migrations"
     info "Run migrations manually later with:"
-    info "  docker exec \$(docker ps -q -f name=catalog_backend) dotnet ef database update"
+    info "  docker exec \$(docker ps -q -f name=edm_backend) dotnet ef database update"
 fi
 
 # Display final status
@@ -189,9 +189,9 @@ info "Jenkins: http://YOUR_SERVER_IP:8080"
 log "=========================================="
 echo ""
 info "Useful commands:"
-info "  View logs: docker service logs catalog_backend -f"
-info "  Scale: docker service scale catalog_backend=3"
-info "  Update: docker stack deploy -c docker-stack.qa.yaml catalog"
-info "  Remove: docker stack rm catalog"
+info "  View logs: docker service logs edm_backend -f"
+info "  Scale: docker service scale edm_backend=3"
+info "  Update: docker stack deploy -c docker-stack.qa.yaml edm"
+info "  Remove: docker stack rm edm"
 echo ""
 log "Deployment completed successfully!"

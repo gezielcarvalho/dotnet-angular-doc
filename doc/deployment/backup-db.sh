@@ -19,9 +19,9 @@ error() { echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR:${NC} $1"; }
 warning() { echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING:${NC} $1"; }
 
 # Configuration
-BACKUP_DIR="/opt/backups/catalog"
-STACK_NAME="catalog"
-APP_DIR="/opt/apps/catalog"
+BACKUP_DIR="/opt/backups/edm"
+STACK_NAME="edm"
+APP_DIR="/opt/apps/edm"
 
 # Load environment variables
 if [ -f "$APP_DIR/.env" ]; then
@@ -48,7 +48,7 @@ if [ -z "$SQLSERVER_CONTAINER" ]; then
 fi
 
 # Generate backup filename
-BACKUP_FILE="$BACKUP_DIR/catalog-db-$(date +%Y%m%d-%H%M%S).bak"
+BACKUP_FILE="$BACKUP_DIR/edm-db-$(date +%Y%m%d-%H%M%S).bak"
 
 # Create backup inside container
 log "Creating backup in container..."
@@ -91,7 +91,7 @@ fi
 # Clean old backups (keep last 10)
 log "Cleaning old backups (keeping last 10)..."
 cd "$BACKUP_DIR"
-ls -t catalog-db-*.bak 2>/dev/null | tail -n +11 | xargs -r rm -f
+ls -t edm-db-*.bak 2>/dev/null | tail -n +11 | xargs -r rm -f
 log "Cleanup completed"
 
 log "Backup process finished!"

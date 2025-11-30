@@ -3,8 +3,9 @@
     "version": "0.0.0",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve",
-        "start:docker": "ng serve --host 0.0.0.0 --poll 2000 --disable-host-check",
+        "start": "ng serve --proxy-config proxy.conf.json",
+        "start:docker": "ng serve --host 0.0.0.0 --proxy-config proxy.docker.conf.json --poll 2000 --disable-host-check",
+        "start:host": "ng serve --proxy-config proxy.conf.json",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
         "test": "ng test"

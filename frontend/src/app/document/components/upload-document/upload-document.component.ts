@@ -10,11 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DocumentService } from '../../../shared/services/document.service';
 import { FolderService } from '../../../shared/services/folder.service';
 import { TagService } from '../../../shared/services/tag.service';
-import {
-    FolderDTO,
-    TagDTO,
-    CreateDocumentRequest,
-} from '../../../shared/models/document.models';
+import { FolderDTO, TagDTO, CreateDocumentRequest } from '../document.models';
 
 @Component({
     selector: 'app-upload-document',

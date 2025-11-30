@@ -16,6 +16,20 @@ export const routes: Route[] = [
             ),
     },
     {
+        path: 'request-password-reset',
+        loadComponent: () =>
+            import(
+                './public/screens/request-password-reset/request-password-reset.component'
+            ).then(m => m.RequestPasswordResetComponent),
+    },
+    {
+        path: 'reset-password',
+        loadComponent: () =>
+            import(
+                './public/screens/reset-password/reset-password.component'
+            ).then(m => m.ResetPasswordComponent),
+    },
+    {
         path: 'document',
         canActivate: [AuthGuard],
         children: [

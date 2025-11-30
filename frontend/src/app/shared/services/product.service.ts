@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { Product } from '../models/product';
+import { Product } from '../models/Product';
 import { ProductPayload } from '../models/product.payload';
-import { Filter } from '../models/filter';
+import { Filter } from '../models/Filter';
 
 const mock_products: ProductPayload = {
     products: [

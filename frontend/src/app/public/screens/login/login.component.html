@@ -143,6 +143,13 @@
                         class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                         [class.border-red-500]="isFieldInvalid('password')"
                         placeholder="Enter your password" />
+                    <p class="mt-2 text-sm text-right">
+                        <a
+                            routerLink="/request-password-reset"
+                            class="text-indigo-600 hover:text-indigo-500">
+                            Forgot password?
+                        </a>
+                    </p>
                     <p
                         *ngIf="isFieldInvalid('password')"
                         class="mt-1 text-sm text-red-600">

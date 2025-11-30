@@ -10,13 +10,13 @@ export SERVER_IP="YOUR_SERVER_IP_HERE"
 export DEPLOY_USER="deploy"
 
 # Application directory
-export APP_DIR="/opt/apps/catalog"
+export APP_DIR="/opt/apps/edm"
 
 # GitHub repository URL
 export GITHUB_REPO="https://github.com/YOUR_USERNAME/YOUR_REPO.git"
 
 # Backup directory
-export BACKUP_DIR="/opt/backups/catalog"
+export BACKUP_DIR="/opt/backups/edm"
 
 # Stack name
-export STACK_NAME="catalog"
+export STACK_NAME="edm"

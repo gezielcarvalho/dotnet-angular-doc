@@ -13,7 +13,7 @@ import {
     PagedResponse,
     DocumentFilterParams,
     DocumentStatus,
-} from '../../../shared/models/document.models';
+} from '../document.models';
 
 @Component({
     selector: 'app-document-list',

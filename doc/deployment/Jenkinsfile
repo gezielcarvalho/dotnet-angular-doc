@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         DOCKER_REGISTRY = 'localhost:5000'
-        STACK_NAME = 'catalog'
+        STACK_NAME = 'edm'
         COMPOSE_FILE = 'docker-stack.qa.yaml'
         SA_PASSWORD = credentials('sql-server-password')  // Configure in Jenkins credentials
         GITHUB_WEBHOOK_SECRET = credentials('github-webhook-secret')  // Configure in Jenkins credentials
@@ -57,8 +57,8 @@ pipeline {
                         sh '''
                             docker build \
                                 --target production \
-                                -t catalog-backend:${GIT_COMMIT_SHORT} \
-                                -t catalog-backend:latest \
+                                -t edm-backend:${GIT_COMMIT_SHORT} \
+                                -t edm-backend:latest \
                                 -f Dockerfile \
                                 .
                         '''
@@ -75,8 +75,8 @@ pipeline {
                         sh '''
                             docker build \
                                 --target production \
-                                -t catalog-frontend:${GIT_COMMIT_SHORT} \
-                                -t catalog-frontend:latest \
+                                -t edm-frontend:${GIT_COMMIT_SHORT} \
+                                -t edm-frontend:latest \
                                 -f Dockerfile \
                                 .
                         '''
@@ -148,10 +148,10 @@ pipeline {
                     // Scan images
                     sh '''
                         echo "Scanning backend image..."
-                        trivy image --severity HIGH,CRITICAL catalog-backend:latest || true
+                        trivy image --severity HIGH,CRITICAL edm-backend:latest || true
                         
                         echo "Scanning frontend image..."
-                        trivy image --severity HIGH,CRITICAL catalog-frontend:latest || true
+                        trivy image --severity HIGH,CRITICAL edm-frontend:latest || true
                     '''
                 }
             }
@@ -165,10 +165,10 @@ pipeline {
                 echo 'Tagging images for registry...'
                 script {
                     sh '''
-                        docker tag catalog-backend:latest ${DOCKER_REGISTRY}/catalog-backend:${GIT_COMMIT_SHORT}
-                        docker tag catalog-backend:latest ${DOCKER_REGISTRY}/catalog-backend:latest
-                        docker tag catalog-frontend:latest ${DOCKER_REGISTRY}/catalog-frontend:${GIT_COMMIT_SHORT}
-                        docker tag catalog-frontend:latest ${DOCKER_REGISTRY}/catalog-frontend:latest
+                        docker tag edm-backend:latest ${DOCKER_REGISTRY}/edm-backend:${GIT_COMMIT_SHORT}
+                        docker tag edm-backend:latest ${DOCKER_REGISTRY}/edm-backend:latest
+                        docker tag edm-frontend:latest ${DOCKER_REGISTRY}/edm-frontend:${GIT_COMMIT_SHORT}
+                        docker tag edm-frontend:latest ${DOCKER_REGISTRY}/edm-frontend:latest
                     '''
                 }
             }
@@ -179,8 +179,8 @@ pipeline {
                 echo 'Creating database backup before deployment...'
                 script {
                     sh '''
-                        mkdir -p /opt/backups/catalog
-                        BACKUP_FILE="/opt/backups/catalog/catalog-db-$(date +%Y%m%d-%H%M%S).bak"
+                        mkdir -p /opt/backups/edm
+                        BACKUP_FILE="/opt/backups/edm/edm-db-$(date +%Y%m%d-%H%M%S).bak"
                         
                         # Check if SQL Server service is running
                         if docker service ps ${STACK_NAME}_sqlserver 2>/dev/null; then
@@ -275,8 +275,8 @@ pipeline {
                         docker image prune -f
                         
                         # Keep last 5 images of each service
-                        docker images catalog-backend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
-                        docker images catalog-frontend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
+                        docker images edm-backend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
+                        docker images edm-frontend --format "{{.ID}} {{.CreatedAt}}" | sort -rk 2 | tail -n +6 | awk '{print $1}' | xargs -r docker rmi || true
                     '''
                 }
             }

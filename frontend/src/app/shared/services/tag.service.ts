@@ -7,7 +7,7 @@ import {
     CreateTagRequest,
     UpdateTagRequest,
     ApiResponse,
-} from '../models/document.models';
+} from '../../document/components/document.models';
 
 @Injectable({
     providedIn: 'root',

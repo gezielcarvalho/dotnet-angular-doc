@@ -1,0 +1,8 @@
+{
+    "/api": {
+        "target": "http://edm-backend:80",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "info"
+    }
+}
