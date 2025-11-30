@@ -26,6 +26,14 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse<bool>.SuccessResponse(result, "If the email exists, a reset link has been sent"));
     }
 
+    [HttpPost("preview-password-reset")]
+    public async Task<ActionResult<ApiResponse<string>>> PreviewPasswordReset([FromBody] RequestPasswordResetRequest request)
+    {
+        var origin = request.Origin ?? Request.Headers["Origin"].ToString() ?? "";
+        var body = await _authService.GeneratePasswordResetEmailPreviewAsync(request.Email, origin);
+        return Ok(ApiResponse<string>.SuccessResponse(body));
+    }
+
     [HttpPost("reset-password")]
     public async Task<ActionResult<ApiResponse<bool>>> ResetPassword([FromBody] ResetPasswordRequest request)
     {

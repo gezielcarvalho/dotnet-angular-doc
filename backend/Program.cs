@@ -28,7 +28,16 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
-builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.SmtpEmailService>();
+// Email service selection (default: smtp client)
+var smtpProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
+if (string.Equals(smtpProvider, "mimekit", StringComparison.OrdinalIgnoreCase) || string.Equals(smtpProvider, "true", StringComparison.OrdinalIgnoreCase))
+{
+    builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.MimeKitEmailService>();
+}
+else
+{
+    builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.SmtpEmailService>();
+}
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -69,6 +78,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Log which email provider is active
+var activeEmailProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
+app.Logger.LogInformation("Active email provider: {Provider}", activeEmailProvider);
 
 // Apply migrations and seed data automatically on startup
 using (var scope = app.Services.CreateScope())

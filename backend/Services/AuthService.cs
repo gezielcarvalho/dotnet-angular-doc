@@ -234,6 +234,29 @@ public class AuthService : IAuthService
         return true;
     }
 
+    public Task<string> GeneratePasswordResetEmailPreviewAsync(string email, string origin)
+    {
+        // This method generates a password reset email body for preview (does not store token or send email)
+        // We'll follow the same link building logic as RequestPasswordResetAsync but don't persist token
+        var baseOrigin = origin?.Trim() ?? string.Empty;
+        var configuredFrontendUrl = _configuration["Frontend:Url"] ?? "http://localhost:4200";
+        if (!Uri.TryCreate(baseOrigin, UriKind.Absolute, out var baseUri))
+        {
+            baseUri = new Uri(configuredFrontendUrl);
+        }
+
+        var token = Guid.NewGuid().ToString("N");
+        var tokenEncoded = System.Net.WebUtility.UrlEncode(token);
+        var resetUri = new Uri(baseUri, $"/reset-password?token={tokenEncoded}");
+        var resetLink = resetUri.ToString();
+        var body = $"<p>We received a request to reset your password. Click the link below to reset it (link expires in 1 hour):</p>" +
+                   $"<p><a href=\"{resetLink}\">Reset Password</a></p>" +
+                   $"<p>Or paste this link into your browser: {resetLink}</p>" +
+                   $"<p>If you didn't request this, ignore this email.</p>";
+
+        return Task.FromResult(body);
+    }
+
     public async Task<bool> ResetPasswordAsync(string token, string newPassword)
     {
         var prt = await _context.PasswordResetTokens

@@ -13,5 +13,6 @@ public interface IAuthService
     Task UpdateLastLoginAsync(Guid userId);
     string GenerateJwtToken(User user);
     Task<bool> RequestPasswordResetAsync(string email, string origin);
+    Task<string> GeneratePasswordResetEmailPreviewAsync(string email, string origin);
     Task<bool> ResetPasswordAsync(string token, string newPassword);
 }
