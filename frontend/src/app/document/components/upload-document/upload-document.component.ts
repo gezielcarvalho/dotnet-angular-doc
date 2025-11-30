@@ -76,33 +76,70 @@ export class UploadDocumentComponent implements OnInit {
             }
         });
 
+        // Load folders (readable). We'll mark writable folders and disable non-writable ones in the UI.
         this.loadFolders();
         this.loadTags();
     }
 
     loadFolders(): void {
-        this.folderService.getRootFolders().subscribe({
+        // Request readable folders and enable writeable ones via the CanWrite flag
+        this.folderService.getFolders().subscribe({
             next: response => {
-                if (response.success && response.data) {
+                console.debug('[UploadDocument] getFolders response', response);
+                if (!response.success) {
+                    this.errorMessage =
+                        response.message || 'Unable to load folders.';
+                    return;
+                }
+                if (response.data) {
                     this.folders = response.data;
-                    // Load subfolders recursively if needed
-                    this.loadAllFolders();
+                    console.debug(
+                        '[UploadDocument] loaded folders',
+                        this.folders,
+                    );
+                    if (this.folders.length === 0) {
+                        // If no folders returned, also try to fetch only writable ones as a fallback
+                        this.errorMessage =
+                            'No folders were returned by the server. Trying to fetch writable folders instead.';
+                        this.folderService
+                            .getFolders({ requiredPermission: 'Write' })
+                            .subscribe({
+                                next: writeResponse => {
+                                    if (
+                                        writeResponse.success &&
+                                        writeResponse.data &&
+                                        writeResponse.data.length > 0
+                                    ) {
+                                        this.folders = writeResponse.data;
+                                        this.errorMessage = '';
+                                    } else {
+                                        this.errorMessage =
+                                            'No folders available to you. Contact an administrator if you think this is an error.';
+                                    }
+                                    console.debug(
+                                        '[UploadDocument] writable fallback',
+                                        writeResponse,
+                                    );
+                                },
+                                error: err => {
+                                    console.error(
+                                        '[UploadDocument] writable fallback error',
+                                        err,
+                                    );
+                                    this.errorMessage =
+                                        'An error occurred while fetching writable folders. Contact your administrator.';
+                                },
+                            });
+                    } else {
+                        this.errorMessage = '';
+                    }
                 }
             },
             error: error => {
                 console.error('Load folders error:', error);
-            },
-        });
-    }
-
-    loadAllFolders(): void {
-        // For simplicity, we'll just show root folders
-        // In a real app, you might want to load all folders or implement a tree picker
-        this.folderService.getFolders().subscribe({
-            next: response => {
-                if (response.success && response.data) {
-                    this.folders = response.data;
-                }
+                // Show user-friendly message
+                this.errorMessage =
+                    'An error occurred while loading folders. Please check your permissions or try again later.';
             },
         });
     }
@@ -210,6 +247,18 @@ export class UploadDocumentComponent implements OnInit {
         this.errorMessage = '';
         this.uploadProgress = 0;
 
+        // Check selected folder write permission (client-side safeguard)
+        const selectedFolderId = this.uploadForm.value.folderId;
+        const selectedFolder = this.folders.find(
+            f => f.id === selectedFolderId,
+        );
+        if (!selectedFolder || !selectedFolder.canWrite) {
+            this.isLoading = false;
+            this.errorMessage =
+                'You do not have write permission to the selected folder.';
+            return;
+        }
+
         const request: CreateDocumentRequest = {
             title: this.uploadForm.value.title,
             description: this.uploadForm.value.description || undefined,
@@ -241,6 +290,17 @@ export class UploadDocumentComponent implements OnInit {
                 console.error('Upload error:', error);
             },
         });
+    }
+
+    selectedFolderIsWritable(): boolean {
+        const selectedFolderId = this.uploadForm.value.folderId;
+        if (!selectedFolderId) return false;
+        const folder = this.folders.find(f => f.id === selectedFolderId);
+        return !!folder && !!folder.canWrite;
+    }
+
+    get hasNoWritableFolders(): boolean {
+        return this.folders.length > 0 && !this.folders.some(f => f.canWrite);
     }
 
     cancel(): void {

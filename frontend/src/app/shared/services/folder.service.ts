@@ -35,12 +35,22 @@ export class FolderService {
             if (params.search) {
                 httpParams = httpParams.set('search', params.search);
             }
+            if (params.requiredPermission) {
+                httpParams = httpParams.set(
+                    'requiredPermission',
+                    params.requiredPermission,
+                );
+            }
         }
 
         return this.http
             .get<ApiResponse<FolderDTO[]>>(this.apiUrl, { params: httpParams })
             .pipe(
                 map(response => {
+                    console.debug(
+                        '[FolderService.getFolders] response:',
+                        response,
+                    );
                     if (response.success && response.data) {
                         response.data = response.data.map(folder =>
                             this.convertDates(folder),

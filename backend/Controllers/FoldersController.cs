@@ -17,15 +17,17 @@ public class FoldersController : ControllerBase
 {
     private readonly DocumentDbContext _context;
     private readonly IPermissionService _permissionService;
+    private readonly ILogger<FoldersController> _logger;
 
-    public FoldersController(DocumentDbContext context, IPermissionService permissionService)
+    public FoldersController(DocumentDbContext context, IPermissionService permissionService, ILogger<FoldersController> logger)
     {
         _context = context;
         _permissionService = permissionService;
+        _logger = logger;
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<FolderDTO>>>> GetFolders([FromQuery] Guid? parentFolderId)
+    public async Task<ActionResult<ApiResponse<List<FolderDTO>>>> GetFolders([FromQuery] Guid? parentFolderId, [FromQuery] string? requiredPermission = null)
     {
         var userId = GetCurrentUserId();
         var query = _context.Folders.AsQueryable();
@@ -53,18 +55,25 @@ public class FoldersController : ControllerBase
                 OwnerName = f.Owner.Username,
                 CreatedAt = f.CreatedAt,
                 SubFolderCount = f.SubFolders.Count,
-                DocumentCount = f.Documents.Count
+                DocumentCount = f.Documents.Count,
+                CanWrite = false
             })
             .ToListAsync();
 
-        // Filter by permissions
+        // Filter by permissions. If requiredPermission provided, filter by that; otherwise default to Read.
+        var permissionToCheck = string.IsNullOrEmpty(requiredPermission) ? "Read" : requiredPermission;
+        _logger.LogDebug("GetFolders called by {UserId} with permissionToCheck={PermissionToCheck} and parentFolderId={ParentFolderId}", userId, permissionToCheck, parentFolderId);
         var accessibleFolders = new List<FolderDTO>();
         foreach (var folder in folders)
         {
-            if (await _permissionService.CanAccessFolderAsync(userId, folder.Id, "Read"))
+            if (await _permissionService.CanAccessFolderAsync(userId, folder.Id, permissionToCheck))
                 accessibleFolders.Add(folder);
+            // Also compute whether the user has write permission for each folder
+            folder.CanWrite = await _permissionService.CanAccessFolderAsync(userId, folder.Id, "Write");
         }
 
+        _logger.LogDebug("GetFolders returning {Count} folders for user {UserId}", accessibleFolders.Count, userId);
+        if (accessibleFolders.Count == 0) _logger.LogInformation("User {UserId} has no accessible folders (permission {Permission}).", userId, permissionToCheck);
         return Ok(ApiResponse<List<FolderDTO>>.SuccessResponse(accessibleFolders));
     }
 
@@ -95,12 +104,16 @@ public class FoldersController : ControllerBase
                 OwnerName = f.Owner.Username,
                 CreatedAt = f.CreatedAt,
                 SubFolderCount = f.SubFolders.Count,
-                DocumentCount = f.Documents.Count
+                DocumentCount = f.Documents.Count,
+                CanWrite = false
             })
             .FirstOrDefaultAsync();
 
         if (folder == null)
             return NotFound(ApiResponse<FolderDTO>.ErrorResponse("Folder not found"));
+
+        // Set CanWrite for the returned folder
+        folder.CanWrite = await _permissionService.CanAccessFolderAsync(userId, id, "Write");
 
         return Ok(ApiResponse<FolderDTO>.SuccessResponse(folder));
     }

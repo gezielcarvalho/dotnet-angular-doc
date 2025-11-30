@@ -9,7 +9,13 @@
 
     <!-- Upload Form -->
     <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()" class="space-y-6">
-        <!-- Error Message -->
+        <p *ngIf="folders.length === 0" class="mt-2 text-sm text-gray-600">
+            There are no folders available. Contact your administrator.
+        </p>
+        <p *ngIf="hasNoWritableFolders" class="mt-2 text-sm text-gray-600">
+            You don’t have write access to any of the folders above. Contact
+            your administrator or request access to upload.
+        </p>
         <div
             *ngIf="errorMessage"
             class="bg-red-50 border border-red-200 rounded-md p-4">
@@ -127,14 +133,29 @@
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                     [class.border-red-500]="isFieldInvalid('folderId')">
                     <option value="">Select a folder</option>
-                    <option *ngFor="let folder of folders" [value]="folder.id">
-                        {{ folder.path }}
+                    <option
+                        *ngFor="let folder of folders"
+                        [value]="folder.id"
+                        [disabled]="!folder.canWrite"
+                        [title]="
+                            !folder.canWrite
+                                ? 'You do not have write permission in this folder'
+                                : ''
+                        ">
+                        {{ folder.path
+                        }}{{ !folder.canWrite ? ' (Read only)' : '' }}
                     </option>
                 </select>
                 <p
                     *ngIf="isFieldInvalid('folderId')"
                     class="mt-1 text-sm text-red-600">
                     {{ getFieldError('folderId') }}
+                </p>
+                <p
+                    *ngIf="folders.length === 0"
+                    class="mt-2 text-sm text-gray-600">
+                    You don’t have write access to any folder. Contact your
+                    administrator or create a folder.
                 </p>
             </div>
 
@@ -190,7 +211,9 @@
             </button>
             <button
                 type="submit"
-                [disabled]="isLoading || !selectedFile"
+                [disabled]="
+                    isLoading || !selectedFile || !selectedFolderIsWritable()
+                "
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span *ngIf="isLoading" class="flex items-center">
                     <svg

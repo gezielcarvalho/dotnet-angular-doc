@@ -91,6 +91,7 @@ export interface FolderDTO {
     createdAt: Date | string;
     subFolderCount: number;
     documentCount: number;
+    canWrite: boolean;
 }
 
 export interface CreateFolderRequest {
@@ -297,4 +298,5 @@ export interface FolderFilterParams {
     parentFolderId?: string;
     pageNumber?: number;
     pageSize?: number;
+    requiredPermission?: string;
 }

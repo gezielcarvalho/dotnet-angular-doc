@@ -24,6 +24,17 @@ builder.Services.AddAutoMapper(typeof(Program));
 // Memory Cache
 builder.Services.AddMemoryCache();
 
+// CORS policy for local dev: allow Angular devserver on localhost:4200
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LocalDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 // Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
@@ -100,15 +111,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Apply CORS (must be before UseAuthentication/UseAuthorization and MapControllers in the pipeline)
+app.UseCors("LocalDev");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// CORS policy
-app.UseCors(builder => builder
-    .AllowAnyOrigin()
-       .AllowAnyMethod()
-          .AllowAnyHeader());
 
 app.Run();

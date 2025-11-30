@@ -38,6 +38,7 @@ describe('FolderService', () => {
                         parentFolderId: null,
                         path: '/Folder 1',
                         createdAt: '2025-01-01T00:00:00Z',
+                        canWrite: true,
                     },
                 ],
             };
@@ -46,6 +47,7 @@ describe('FolderService', () => {
                 expect(response.success).toBe(true);
                 expect(response.data?.length).toBe(1);
                 expect(response.data?.[0].createdAt).toBeInstanceOf(Date);
+                expect(response.data?.[0].canWrite).toBe(true);
                 done();
             });
 
@@ -79,6 +81,33 @@ describe('FolderService', () => {
                 request =>
                     request.url === `${environment.apiUrl}/folders` &&
                     request.params.get('parentFolderId') === '1',
+            );
+            expect(req.request.method).toBe('GET');
+            req.flush(mockResponse);
+        });
+
+        it('should fetch folders by parent id and requiredPermission', done => {
+            const mockResponse = {
+                success: true,
+                message: 'Folders retrieved',
+                data: [],
+            };
+
+            service
+                .getFolders({
+                    parentFolderId: '1',
+                    requiredPermission: 'Write',
+                })
+                .subscribe(response => {
+                    expect(response.success).toBe(true);
+                    done();
+                });
+
+            const req = httpMock.expectOne(
+                request =>
+                    request.url === `${environment.apiUrl}/folders` &&
+                    request.params.get('parentFolderId') === '1' &&
+                    request.params.get('requiredPermission') === 'Write',
             );
             expect(req.request.method).toBe('GET');
             req.flush(mockResponse);

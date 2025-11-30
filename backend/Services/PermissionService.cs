@@ -3,23 +3,31 @@ using Backend.Models.DTO.Permissions;
 using Backend.Models.Document;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Linq;
 
 namespace Backend.Services;
 
 public class PermissionService : IPermissionService
 {
     private readonly DocumentDbContext _context;
+    private readonly ILogger<PermissionService> _logger;
 
-    public PermissionService(DocumentDbContext context)
+    public PermissionService(DocumentDbContext context, ILogger<PermissionService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
-    public async Task<bool> CanAccessFolderAsync(Guid userId, Guid folderId, string requiredPermission)
+        public async Task<bool> CanAccessFolderAsync(Guid userId, Guid folderId, string requiredPermission)
     {
         // System admins have full access
         var user = await _context.Users.FindAsync(userId);
-        if (user?.Role == "SystemAdmin")
+        if (user == null)
+        {
+            _logger?.LogDebug("PermissionService: user {UserId} not found.", userId);
+        }
+            if (user?.Role == "SystemAdmin")
             return true;
 
         var folder = await _context.Folders
@@ -27,11 +35,30 @@ public class PermissionService : IPermissionService
             .FirstOrDefaultAsync(f => f.Id == folderId);
 
         if (folder == null)
+        {
+            _logger?.LogDebug("PermissionService: folder {FolderId} not found.", folderId);
             return false;
+        }
 
-        // Owner has full access
+            // Admin role also has full access (organization-wide admin)
+            if (user?.Role == "Admin")
+                return true;
+
+            // Owner has full access
         if (folder.OwnerId == userId)
             return true;
+
+            // If it's a system folder, treat read as available to all active users
+            if (folder.IsSystemFolder)
+            {
+                if (requiredPermission == "Read")
+                    return true;
+
+                // Grant write permissions on system folders to roles that can create documents
+                var rolesWithWrite = new[] { "SystemAdmin", "Admin", "Manager", "Editor", "Contributor" };
+                if (requiredPermission == "Write" && rolesWithWrite.Contains(user?.Role))
+                    return true;
+            }
 
         // Check explicit permissions
         var permission = await _context.Permissions
@@ -49,11 +76,11 @@ public class PermissionService : IPermissionService
         };
     }
 
-    public async Task<bool> CanAccessDocumentAsync(Guid userId, Guid documentId, string requiredPermission)
+        public async Task<bool> CanAccessDocumentAsync(Guid userId, Guid documentId, string requiredPermission)
     {
         // System admins have full access
         var user = await _context.Users.FindAsync(userId);
-        if (user?.Role == "SystemAdmin")
+            if (user?.Role == "SystemAdmin" || user?.Role == "Admin")
             return true;
 
         var document = await _context.Documents

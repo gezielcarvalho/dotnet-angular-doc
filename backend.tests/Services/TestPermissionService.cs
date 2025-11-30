@@ -113,6 +113,81 @@ public class TestPermissionService
     }
 
     [Fact]
+    public async Task CanAccessFolderAsync_SystemFolder_Read_ReturnsTrueForAnyUser()
+    {
+        // Arrange
+        var context = DbContextHelper.GetInMemoryDbContext();
+        var user = EdmFixtures.GetTestUser();
+        var admin = EdmFixtures.GetTestSystemAdmin();
+        var folder = EdmFixtures.GetTestFolder(admin.Id);
+        folder.IsSystemFolder = true;
+        
+        context.Users.AddRange(user, admin);
+        context.Folders.Add(folder);
+        await context.SaveChangesAsync();
+
+        var service = new PermissionService(context);
+
+        // Act
+        var result = await service.CanAccessFolderAsync(user.Id, folder.Id, "Read");
+
+        // Assert
+        result.Should().BeTrue();
+
+        DbContextHelper.CleanupDbContext(context);
+    }
+
+    [Fact]
+    public async Task CanAccessFolderAsync_SystemFolder_Write_ReturnsTrueForEditor()
+    {
+        // Arrange
+        var context = DbContextHelper.GetInMemoryDbContext();
+        var editor = EdmFixtures.GetTestUser("Editor");
+        var admin = EdmFixtures.GetTestSystemAdmin();
+        var folder = EdmFixtures.GetTestFolder(admin.Id);
+        folder.IsSystemFolder = true;
+        
+        context.Users.AddRange(editor, admin);
+        context.Folders.Add(folder);
+        await context.SaveChangesAsync();
+
+        var service = new PermissionService(context);
+
+        // Act
+        var result = await service.CanAccessFolderAsync(editor.Id, folder.Id, "Write");
+
+        // Assert
+        result.Should().BeTrue();
+
+        DbContextHelper.CleanupDbContext(context);
+    }
+
+    [Fact]
+    public async Task CanAccessFolderAsync_SystemFolder_Write_ReturnsFalseForViewer()
+    {
+        // Arrange
+        var context = DbContextHelper.GetInMemoryDbContext();
+        var viewer = EdmFixtures.GetTestUser("Viewer");
+        var admin = EdmFixtures.GetTestSystemAdmin();
+        var folder = EdmFixtures.GetTestFolder(admin.Id);
+        folder.IsSystemFolder = true;
+        
+        context.Users.AddRange(viewer, admin);
+        context.Folders.Add(folder);
+        await context.SaveChangesAsync();
+
+        var service = new PermissionService(context);
+
+        // Act
+        var result = await service.CanAccessFolderAsync(viewer.Id, folder.Id, "Write");
+
+        // Assert
+        result.Should().BeFalse();
+
+        DbContextHelper.CleanupDbContext(context);
+    }
+
+    [Fact]
     public async Task CanAccessDocumentAsync_Owner_ReturnsTrue()
     {
         // Arrange

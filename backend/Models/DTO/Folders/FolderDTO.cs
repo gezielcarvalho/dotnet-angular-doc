@@ -15,4 +15,6 @@ public class FolderDTO
     public DateTime CreatedAt { get; set; }
     public int SubFolderCount { get; set; }
     public int DocumentCount { get; set; }
+    // Indicates if the current user has write access to this folder
+    public bool CanWrite { get; set; }
 }
