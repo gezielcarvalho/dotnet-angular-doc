@@ -18,11 +18,22 @@ export class AuthGuard implements CanActivate {
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot,
     ): Observable<boolean> | Promise<boolean> | boolean {
+        console.log(
+            '[AuthGuard] canActivate check: requested url =',
+            state.url,
+        );
         return this.service.isAuthenticated().then((authenticated: boolean) => {
             if (authenticated) {
+                console.log(
+                    '[AuthGuard] canActivate: authenticated -> allow',
+                    state.url,
+                );
                 return true;
             } else {
-                // redirect to login and include returnUrl so user can be sent back
+                console.warn(
+                    '[AuthGuard] canActivate: not authenticated -> redirecting to /login',
+                    state.url,
+                );
                 this.router.navigate(['/login'], {
                     queryParams: { returnUrl: state.url },
                 });

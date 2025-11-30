@@ -36,7 +36,22 @@ export class AuthService {
     constructor() {
         // Check token validity on service initialization
         if (this.tokenService.isTokenExpired()) {
-            this.logout();
+            console.warn(
+                '[AuthService] Token expired during service init; initiating logout',
+            );
+            // Include optional info about stored token/user
+            try {
+                const token = this.tokenService.getToken();
+                console.debug(
+                    '[AuthService] Stored token (truncated):',
+                    token?.substring?.(0, 20),
+                );
+            } catch (e) {
+                console.debug('[AuthService] Error reading stored token', e);
+            }
+            // call logout but we might prefer not to navigate during init
+            // Do not navigate to '/' on automatic logout in constructor
+            this.logout(false);
         }
     }
 
@@ -135,11 +150,23 @@ export class AuthService {
         );
     }
 
-    logout(): void {
+    logout(navigate: boolean = true): void {
+        console.warn(
+            '[AuthService] logout called; clearing token and navigating to /',
+        );
+        // Log a minimal stack trace to find the source of the call
+        try {
+            const stack = new Error().stack?.split('\n').slice(2, 6).join('\n');
+            console.debug('[AuthService] logout call stack:\n', stack);
+        } catch (err) {
+            /* ignore stack errors */
+        }
         this.tokenService.clear();
         this.loggedInSubject.next(false);
         this.currentUserSubject.next(null);
-        this.router.navigate(['/']);
+        if (navigate) {
+            this.router.navigate(['/']);
+        }
     }
 
     isAuthenticated(): Promise<boolean> {

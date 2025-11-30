@@ -26,7 +26,20 @@ export class ResetPasswordComponent {
         private route: ActivatedRoute,
         private router: Router,
     ) {
+        // DEBUG: log the current browser href, query params and token
         const token = this.route.snapshot.queryParamMap.get('token') || '';
+        try {
+            console.log(
+                '[ResetPasswordComponent] window.location.href =',
+                window?.location?.href,
+            );
+        } catch (err) {
+            console.log(
+                '[ResetPasswordComponent] window.location.href (error reading):',
+                err,
+            );
+        }
+        console.log('[ResetPasswordComponent] queryParamMap token =', token);
         this.form.patchValue({ token });
     }
 
