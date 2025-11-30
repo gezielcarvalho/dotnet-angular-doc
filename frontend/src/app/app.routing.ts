@@ -55,6 +55,14 @@ export const routes: Route[] = [
         ],
     },
     {
+        path: 'admin',
+        canActivate: [AuthGuard],
+        loadComponent: () =>
+            import('./admin/admin-dashboard/admin-dashboard.component').then(
+                m => m.AdminDashboardComponent,
+            ),
+    },
+    {
         path: 'products',
         loadComponent: () =>
             import('./public/screens/products/products.component').then(

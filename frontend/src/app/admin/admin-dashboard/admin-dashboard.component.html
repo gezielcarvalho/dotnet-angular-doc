@@ -1,0 +1,32 @@
+<div class="admin-dashboard container mx-auto p-4">
+    <h2 class="text-2xl mb-4">Admin Dashboard</h2>
+
+    <div *ngIf="!isAdmin" class="alert alert-warning">
+        <p>You are not authorized to view admin tools.</p>
+        <button class="btn btn-secondary" (click)="goHome()">Back</button>
+    </div>
+
+    <div *ngIf="isAdmin">
+        <p class="mb-2">
+            Use the button below to run the server migration that ensures
+            personal folders exist for each existing user.
+        </p>
+        <p class="mb-4">
+            <strong>Note:</strong> This action may create folders for many users
+            and should be run by an administrator.
+        </p>
+
+        <button
+            class="btn btn-primary"
+            (click)="runMigration()"
+            [disabled]="running">
+            <span *ngIf="!running">Run Personal Folder Migration</span>
+            <span *ngIf="running">Running migration...</span>
+        </button>
+
+        <div *ngIf="resultMessage" class="mt-4">
+            <p><strong>Result:</strong> {{ resultMessage }}</p>
+            <p *ngIf="createdCount !== null">Created: {{ createdCount }}</p>
+        </div>
+    </div>
+</div>

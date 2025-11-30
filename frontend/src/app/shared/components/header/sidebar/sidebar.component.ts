@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { inject } from '@angular/core';
+import { AuthService } from 'src/app/shared/services/auth.service';
 import {
     faCube,
     faHome,
@@ -7,6 +9,7 @@ import {
     faKitchenSet,
     faTicket,
     faChalkboard,
+    faUsers,
 } from '@fortawesome/free-solid-svg-icons';
 import { SidebarIconComponent } from './sidebar-icon/sidebar-icon.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -26,4 +29,11 @@ export class SidebarComponent {
     faKitchenSet = faKitchenSet;
     faTicket = faTicket;
     faChalkboard = faChalkboard;
+    faUsers = faUsers;
+
+    private authService = inject(AuthService);
+
+    isAdmin(): boolean {
+        return this.authService.isAdmin();
+    }
 }

@@ -26,4 +26,10 @@
         [routerLink]="['/shopping-list']">
         <fa-icon [icon]="faListCheck" size="2x" />
     </app-sidebar-icon>
+    <app-sidebar-icon
+        *ngIf="isAdmin()"
+        [text]="'Admin'"
+        [routerLink]="['/admin']">
+        <fa-icon [icon]="faUsers" size="2x" />
+    </app-sidebar-icon>
 </div>
