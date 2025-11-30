@@ -1,7 +1,7 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: catalog-sqlserver-qa
+    container_name: edm-sqlserver-qa
     ports:
       - "14333:1433"
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - sqlserver-data-qa:/var/opt/mssql
     networks:
-      - catalog-network-qa
+      - edm-network-qa
     restart: always
     healthcheck:
       test:
@@ -26,7 +26,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: production
-    container_name: catalog-backend-qa
+    container_name: edm-backend-qa
     ports:
       - "5175:80"
     environment:
@@ -34,7 +34,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;
     networks:
-      - catalog-network-qa
+      - edm-network-qa
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -51,11 +51,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
-    container_name: catalog-frontend-qa
+    container_name: edm-frontend-qa
     ports:
       - "4200:80"
     networks:
-      - catalog-network-qa
+      - edm-network-qa
     depends_on:
       - backend
     restart: always
@@ -64,5 +64,5 @@ volumes:
   sqlserver-data-qa:
 
 networks:
-  catalog-network-qa:
+  edm-network-qa:
     driver: bridge

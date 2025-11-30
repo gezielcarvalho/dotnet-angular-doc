@@ -1,7 +1,7 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: catalog-sqlserver-debug
+    container_name: edm-sqlserver-debug
     ports:
       - "14333:1433"
     environment:
@@ -11,7 +11,7 @@ services:
     volumes:
       - sqlserver-data:/var/opt/mssql
     networks:
-      - catalog-network
+      - edm-network
     restart: unless-stopped
     healthcheck:
       test:
@@ -26,7 +26,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: development
-    container_name: catalog-backend-debug
+    container_name: edm-backend-debug
     ports:
       - "5175:80"
       - "7277:443"
@@ -37,7 +37,7 @@ services:
       - ./backend:/src
       - backend-nuget:/root/.nuget/packages
     networks:
-      - catalog-network
+      - edm-network
     depends_on:
       sqlserver:
         condition: service_healthy
@@ -50,7 +50,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: development
-    container_name: catalog-frontend-debug
+    container_name: edm-frontend-debug
     ports:
       - "4200:4200"
       - "49153:49153"
@@ -61,7 +61,7 @@ services:
       - /app/node_modules
       - frontend-angular:/app/.angular
     networks:
-      - catalog-network
+      - edm-network
     depends_on:
       - backend
 
@@ -71,5 +71,5 @@ volumes:
   sqlserver-data:
 
 networks:
-  catalog-network:
+  edm-network:
     driver: bridge
