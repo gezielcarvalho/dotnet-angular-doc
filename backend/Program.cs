@@ -28,6 +28,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.SmtpEmailService>();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

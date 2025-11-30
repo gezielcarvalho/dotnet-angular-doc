@@ -23,6 +23,7 @@ namespace Backend.Data
         public DbSet<WorkflowStep> WorkflowSteps { get; set; } = null!;
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
         public DbSet<Notification> Notifications { get; set; } = null!;
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; } = null!;
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -73,6 +74,18 @@ namespace Backend.Data
             
             // Seed data
             SeedData(modelBuilder);
+
+            // PasswordResetToken configuration
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Token).IsRequired();
+                entity.HasIndex(e => e.Token).IsUnique();
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
         
         private void ConfigureUser(ModelBuilder modelBuilder)

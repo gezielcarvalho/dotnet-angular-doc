@@ -14,11 +14,13 @@ public class AuthService : IAuthService
 {
     private readonly DocumentDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly Backend.Services.Interfaces.IEmailService _emailService;
 
-    public AuthService(DocumentDbContext context, IConfiguration configuration)
+    public AuthService(DocumentDbContext context, IConfiguration configuration, Backend.Services.Interfaces.IEmailService emailService)
     {
         _context = context;
         _configuration = configuration;
+        _emailService = emailService;
     }
 
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
@@ -179,5 +181,62 @@ public class AuthService : IAuthService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    public async Task<bool> RequestPasswordResetAsync(string email, string origin)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && !u.IsDeleted);
+        // Do not reveal whether the email exists — return true even if not found
+        if (user == null)
+            return true;
+
+        var token = Guid.NewGuid().ToString("N");
+        var expires = DateTime.UtcNow.AddHours(1);
+
+        var prt = new PasswordResetToken
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            Token = token,
+            ExpiresAt = expires,
+            Used = false,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PasswordResetTokens.Add(prt);
+        await _context.SaveChangesAsync();
+
+        var resetLink = origin?.TrimEnd('/') + $"/reset-password?token={token}";
+        var subject = "Password reset request";
+        var body = $"<p>We received a request to reset your password. Click the link below to reset it (link expires in 1 hour):</p>" +
+                   $"<p><a href=\"{resetLink}\">Reset Password</a></p>" +
+                   $"<p>If you didn't request this, ignore this email.</p>";
+
+        await _emailService.SendEmailAsync(user.Email, subject, body);
+
+        return true;
+    }
+
+    public async Task<bool> ResetPasswordAsync(string token, string newPassword)
+    {
+        var prt = await _context.PasswordResetTokens
+            .Include(p => p.User)
+            .FirstOrDefaultAsync(p => p.Token == token && !p.Used && p.ExpiresAt > DateTime.UtcNow);
+
+        if (prt == null)
+            return false;
+
+        var user = prt.User;
+        if (user == null || user.IsDeleted)
+            return false;
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        user.ModifiedAt = DateTime.UtcNow;
+        user.ModifiedBy = user.Username;
+
+        prt.Used = true;
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }
