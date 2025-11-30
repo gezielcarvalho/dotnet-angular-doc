@@ -10,6 +10,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DocumentService } from '../../../shared/services/document.service';
 import { FolderService } from '../../../shared/services/folder.service';
 import { TagService } from '../../../shared/services/tag.service';
+import { AuthService } from '../../../shared/services/auth.service';
 import { FolderDTO, TagDTO, CreateDocumentRequest } from '../document.models';
 
 @Component({
@@ -57,6 +58,7 @@ export class UploadDocumentComponent implements OnInit {
         private documentService: DocumentService,
         private folderService: FolderService,
         private tagService: TagService,
+        private authService: AuthService,
         private router: Router,
         private route: ActivatedRoute,
     ) {}
@@ -93,6 +95,43 @@ export class UploadDocumentComponent implements OnInit {
                 }
                 if (response.data) {
                     this.folders = response.data;
+                    // Try to find the special Users parent folder and add current user's personal folder to list
+                    const usersParent = this.folders.find(
+                        f => f.name === 'Users',
+                    );
+                    const currentUser = this.authService.getCurrentUserSync();
+                    if (usersParent && currentUser) {
+                        this.folderService
+                            .getSubFolders(usersParent.id)
+                            .subscribe({
+                                next: subResp => {
+                                    if (subResp.success && subResp.data) {
+                                        const personal = subResp.data.find(
+                                            sf => sf.ownerId === currentUser.id,
+                                        );
+                                        if (personal) {
+                                            // Ensure personal folder is present in root list (so users can directly upload there)
+                                            // Only add if not present already
+                                            if (
+                                                !this.folders.some(
+                                                    f => f.id === personal.id,
+                                                )
+                                            ) {
+                                                this.folders.push(personal);
+                                            }
+                                            // Auto-select personal folder if no folder selected
+                                            if (
+                                                !this.uploadForm.value.folderId
+                                            ) {
+                                                this.uploadForm.patchValue({
+                                                    folderId: personal.id,
+                                                });
+                                            }
+                                        }
+                                    }
+                                },
+                            });
+                    }
                     console.debug(
                         '[UploadDocument] loaded folders',
                         this.folders,

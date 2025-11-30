@@ -108,3 +108,4 @@ public class PermissionsController : ControllerBase
         return User.Identity?.Name ?? "";
     }
 }
+

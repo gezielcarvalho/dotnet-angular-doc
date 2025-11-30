@@ -34,7 +34,7 @@ public class TestAuthService
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var service = new AuthService(context, _configuration);
+        var service = new AuthService(context, _configuration, new Backend.Services.NullEmailService(), Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthService>.Instance);
         var loginRequest = EdmFixtures.GetLoginRequest();
 
         // Act

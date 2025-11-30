@@ -25,6 +25,11 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
+    // Convenience constructor used in tests where we don't need email service or logger
+    public AuthService(DocumentDbContext context, IConfiguration configuration) : this(context, configuration, new NullEmailService(), Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthService>.Instance)
+    {
+    }
+
     public async Task<LoginResponse?> LoginAsync(LoginRequest request)
     {
         var user = await _context.Users
@@ -89,6 +94,91 @@ public class AuthService : IAuthService
 
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
+
+        // Create personal folder for this user under the 'Users' system folder
+        try
+        {
+            // Find users parent system folder; create if missing
+            var usersParent = await _context.Folders.FirstOrDefaultAsync(f => f.Name == "Users" && f.IsSystemFolder && f.ParentFolderId != null);
+            if (usersParent == null)
+            {
+                // Fallback: find root
+                var root = await _context.Folders.FirstOrDefaultAsync(f => f.ParentFolderId == null);
+                if (root == null)
+                {
+                    // Create a default Root system folder if missing (use new user as owner for initialization)
+                    root = new Folder
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "Root",
+                        Description = "Root folder",
+                        Path = "/Root/",
+                        Level = 0,
+                        ParentFolderId = null,
+                        IsSystemFolder = true,
+                        OwnerId = user.Id,
+                        IsDeleted = false,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = user.Username
+                    };
+                    _context.Folders.Add(root);
+                    await _context.SaveChangesAsync();
+                }
+                usersParent = new Folder
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Users",
+                    Description = "Personal folders for users",
+                    Path = $"{root.Path}Users/",
+                    Level = root.Level + 1,
+                    ParentFolderId = root.Id,
+                    IsSystemFolder = true,
+                    OwnerId = user.Id, // set temporarily to new user; can be changed to admin
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = user.Username
+                };
+                _context.Folders.Add(usersParent);
+                await _context.SaveChangesAsync();
+            }
+
+            var personalFolder = new Folder
+            {
+                Id = Guid.NewGuid(),
+                Name = user.Username,
+                Description = $"Personal folder for {user.Username}",
+                Path = $"{usersParent.Path}{user.Username}/",
+                Level = usersParent.Level + 1,
+                ParentFolderId = usersParent.Id,
+                IsSystemFolder = false,
+                OwnerId = user.Id,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = user.Username
+            };
+            _context.Folders.Add(personalFolder);
+            await _context.SaveChangesAsync();
+
+            // Add explicit admin permission for the user for their personal folder
+            var permission = new Backend.Models.Document.Permission
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                FolderId = personalFolder.Id,
+                PermissionType = "Admin",
+                IsInherited = false,
+                GrantedAt = DateTime.UtcNow,
+                GrantedBy = user.Username,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = user.Username
+            };
+            _context.Permissions.Add(permission);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create personal folder for user {Username}", user.Username);
+        }
 
         var token = GenerateJwtToken(user);
         var refreshToken = Guid.NewGuid().ToString();

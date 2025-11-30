@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 
 namespace backend.tests.Controllers;
@@ -38,7 +39,7 @@ public class TestAuthController
         context.Users.Add(user);
         await context.SaveChangesAsync();
 
-        var authService = new AuthService(context, _configuration);
+        var authService = new AuthService(context, _configuration, new Backend.Services.NullEmailService(), Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthService>.Instance);
         var controller = new AuthController(authService);
         var loginRequest = EdmFixtures.GetLoginRequest();
 
@@ -92,6 +93,14 @@ public class TestAuthController
         var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be(200);
         okResult.Value.Should().NotBeNull();
+
+        // Verify personal folder created
+        var createdUser = await context.Users.FirstOrDefaultAsync(u => u.Username == registerRequest.Username);
+        createdUser.Should().NotBeNull();
+        var personalFolder = await context.Folders.FirstOrDefaultAsync(f => f.OwnerId == createdUser!.Id && f.ParentFolderId != null);
+        personalFolder.Should().NotBeNull();
+        var permission = await context.Permissions.FirstOrDefaultAsync(p => p.FolderId == personalFolder!.Id && p.UserId == createdUser.Id && p.PermissionType == "Admin");
+        permission.Should().NotBeNull();
 
         DbContextHelper.CleanupDbContext(context);
     }
