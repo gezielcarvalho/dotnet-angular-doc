@@ -234,7 +234,7 @@ secrets/
 **Application updates:**
 
 - Merge PR to `development` → Jenkins auto-deploys
-- Manual: `docker stack deploy -c docker-stack.qa.yaml catalog`
+- Manual: `docker stack deploy -c docker-stack.qa.yaml edm`
 
 ---
 

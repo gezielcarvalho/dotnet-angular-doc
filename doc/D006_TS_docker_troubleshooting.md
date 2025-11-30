@@ -12,8 +12,8 @@ When running `docker-compose up`, you may encounter the following error:
 [+] Running 3/3
  ✔ backend                                     Built          0.0s
  ✔ frontend                                    Built          0.0s
- ✘ Network dotnet-angular-doc_catalog-network  Error          0.0s
-failed to create network dotnet-angular-doc_catalog-network: Error response from daemon: all predefined address pools have been fully subnetted
+ ✘ Network dotnet-angular-doc_edm-network  Error          0.0s
+failed to create network dotnet-angular-doc_edm-network: Error response from daemon: all predefined address pools have been fully subnetted
 ```
 
 **Cause:**

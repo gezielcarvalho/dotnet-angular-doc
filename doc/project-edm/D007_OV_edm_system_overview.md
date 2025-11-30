@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-Transformation of the dotnet-angular-catalog project into a comprehensive Electronic Document Management (EDM) system. The system will enable organizations to store, manage, track, and retrieve electronic documents with version control, access management, and workflow automation.
+Transformation of the dotnet-angular-edm project into a comprehensive Electronic Document Management (EDM) system. The system will enable organizations to store, manage, track, and retrieve electronic documents with version control, access management, and workflow automation.
 
 ## System Purpose
 

@@ -26,7 +26,7 @@ Before deploying the application, ensure:
 
 ### Network
 
-- Overlay network: `catalog-network-swarm`
+- Overlay network: `edm-network-swarm`
 - Internal service discovery via DNS
 
 ---
@@ -61,10 +61,10 @@ Create `server-config.sh`:
 # Server Configuration
 export SERVER_IP="YOUR_SERVER_IP"
 export DEPLOY_USER="deploy"
-export APP_DIR="/opt/apps/catalog"
+export APP_DIR="/opt/apps/edm"
 export GITHUB_REPO="https://github.com/YOUR_USERNAME/YOUR_REPO.git"
-export BACKUP_DIR="/opt/backups/catalog"
-export STACK_NAME="catalog"
+export BACKUP_DIR="/opt/backups/edm"
+export STACK_NAME="edm"
 ```
 
 **⚠️ Important:** Never commit `server-config.sh` to version control!
@@ -125,11 +125,11 @@ The script will:
 docker service ls
 
 # View stack services
-docker stack services catalog
+docker stack services edm
 
 # Check individual service
-docker service ps catalog_backend --no-trunc
-docker service ps catalog_frontend --no-trunc
+docker service ps edm_backend --no-trunc
+docker service ps edm_frontend --no-trunc
 ```
 
 ---
@@ -188,7 +188,7 @@ curl http://YOUR_SERVER_IP
 ### 5.2 Create Jenkins Pipeline Job
 
 1. **Jenkins → New Item**
-2. **Name:** `catalog-deployment`
+2. **Name:** `edm-deployment`
 3. **Type:** Pipeline
 4. **Configure:**
    - ✓ GitHub project: `https://github.com/YOUR_USERNAME/YOUR_REPO/`
@@ -220,26 +220,26 @@ curl http://YOUR_SERVER_IP
 
 ```bash
 # Backend logs
-docker service logs catalog_backend -f
+docker service logs edm_backend -f
 
 # Frontend logs
-docker service logs catalog_frontend -f
+docker service logs edm_frontend -f
 
 # Database logs
-docker service logs catalog_sqlserver -f
+docker service logs edm_sqlserver -f
 
 # All services
-docker service logs -f $(docker service ls -q -f name=catalog)
+docker service logs -f $(docker service ls -q -f name=edm)
 ```
 
 ### Scale Services
 
 ```bash
 # Scale backend
-docker service scale catalog_backend=3
+docker service scale edm_backend=3
 
 # Scale frontend
-docker service scale catalog_frontend=2
+docker service scale edm_frontend=2
 
 # View updated status
 docker service ls
@@ -255,28 +255,28 @@ docker service ls
 #### Option 2: Manual Update
 
 ```bash
-cd /opt/apps/catalog
+cd /opt/apps/edm
 
 # Pull latest code (if using Git deployment)
 git pull origin development
 
 # Redeploy stack
-docker stack deploy -c docker-stack.qa.yaml catalog
+docker stack deploy -c docker-stack.qa.yaml edm
 
 # Check rollout status
-docker service ps catalog_backend
+docker service ps edm_backend
 ```
 
 ### Restart Services
 
 ```bash
 # Force update (restarts containers)
-docker service update --force catalog_backend
-docker service update --force catalog_frontend
+docker service update --force edm_backend
+docker service update --force edm_frontend
 
 # Or redeploy entire stack
-cd /opt/apps/catalog
-docker stack deploy -c docker-stack.qa.yaml catalog
+cd /opt/apps/edm
+docker stack deploy -c docker-stack.qa.yaml edm
 ```
 
 ---
@@ -287,7 +287,7 @@ docker stack deploy -c docker-stack.qa.yaml catalog
 
 ```bash
 # Find backend container
-BACKEND_CONTAINER=$(docker ps -q -f name=catalog_backend | head -n 1)
+BACKEND_CONTAINER=$(docker ps -q -f name=edm_backend | head -n 1)
 
 # Run migrations
 docker exec $BACKEND_CONTAINER dotnet ef database update
@@ -301,18 +301,18 @@ cd /root/deployment
 ./backup-db.sh
 
 # Or manual backup
-SQLSERVER_CONTAINER=$(docker ps -q -f name=catalog_sqlserver)
+SQLSERVER_CONTAINER=$(docker ps -q -f name=edm_sqlserver)
 docker exec $SQLSERVER_CONTAINER /opt/mssql-tools/bin/sqlcmd \
   -S localhost -U SA -P "YOUR_PASSWORD" \
   -Q "BACKUP DATABASE [CatalogDB] TO DISK = '/tmp/backup.bak' WITH INIT, COMPRESSION"
-docker cp $SQLSERVER_CONTAINER:/tmp/backup.bak /opt/backups/catalog/
+docker cp $SQLSERVER_CONTAINER:/tmp/backup.bak /opt/backups/edm/
 ```
 
 ### Restore Database
 
 ```bash
 # Copy backup to container
-docker cp /opt/backups/catalog/backup.bak $SQLSERVER_CONTAINER:/tmp/
+docker cp /opt/backups/edm/backup.bak $SQLSERVER_CONTAINER:/tmp/
 
 # Restore database
 docker exec $SQLSERVER_CONTAINER /opt/mssql-tools/bin/sqlcmd \
@@ -332,7 +332,7 @@ curl http://localhost/health
 
 # Individual services
 docker service ls
-docker stack ps catalog
+docker stack ps edm
 
 # Resource usage
 docker stats
@@ -341,7 +341,7 @@ docker stats
 ### Via Portainer
 
 1. Open: `http://YOUR_SERVER_IP:9000`
-2. Navigate to: Stacks → catalog
+2. Navigate to: Stacks → edm
 3. View:
    - Service status
    - Container logs
@@ -356,16 +356,16 @@ docker stats
 
 ```bash
 # View detailed errors
-docker service ps catalog_backend --no-trunc
+docker service ps edm_backend --no-trunc
 
 # Check logs
-docker service logs catalog_backend --tail=100
+docker service logs edm_backend --tail=100
 
 # Inspect service
-docker service inspect catalog_backend
+docker service inspect edm_backend
 
 # Check database connection
-BACKEND_CONTAINER=$(docker ps -q -f name=catalog_backend)
+BACKEND_CONTAINER=$(docker ps -q -f name=edm_backend)
 docker exec $BACKEND_CONTAINER dotnet --info
 ```
 
@@ -373,7 +373,7 @@ docker exec $BACKEND_CONTAINER dotnet --info
 
 ```bash
 # Test database connection
-SQLSERVER_CONTAINER=$(docker ps -q -f name=catalog_sqlserver)
+SQLSERVER_CONTAINER=$(docker ps -q -f name=edm_sqlserver)
 docker exec -it $SQLSERVER_CONTAINER /opt/mssql-tools/bin/sqlcmd \
   -S localhost -U SA -P "YOUR_PASSWORD" \
   -Q "SELECT @@VERSION"
@@ -388,13 +388,13 @@ docker exec $SQLSERVER_CONTAINER /opt/mssql-tools/bin/sqlcmd \
 
 ```bash
 # Check nginx logs
-docker service logs catalog_nginx
+docker service logs edm_nginx
 
 # Check frontend logs
-docker service logs catalog_frontend
+docker service logs edm_frontend
 
 # Test frontend container
-FRONTEND_CONTAINER=$(docker ps -q -f name=catalog_frontend)
+FRONTEND_CONTAINER=$(docker ps -q -f name=edm_frontend)
 docker exec $FRONTEND_CONTAINER ls -la /usr/share/nginx/html
 ```
 
@@ -405,7 +405,7 @@ docker exec $FRONTEND_CONTAINER ls -la /usr/share/nginx/html
 sudo ufw status
 
 # Check if nginx is listening
-docker service ps catalog_nginx
+docker service ps edm_nginx
 
 # Test locally
 curl http://localhost
@@ -433,7 +433,7 @@ crontab -e
 Via MobaXterm:
 
 1. Connect to server
-2. SFTP browser → `/opt/backups/catalog/`
+2. SFTP browser → `/opt/backups/edm/`
 3. Right-click backup file → Download
 
 ---
@@ -443,23 +443,23 @@ Via MobaXterm:
 ### Quick Rollback
 
 ```bash
-cd /opt/apps/catalog
+cd /opt/apps/edm
 
 # Option 1: Rollback to previous git commit
 git log --oneline
 git checkout PREVIOUS_COMMIT_HASH
-docker stack deploy -c docker-stack.qa.yaml catalog
+docker stack deploy -c docker-stack.qa.yaml edm
 
 # Option 2: Restore from backup
 # 1. Stop current stack
-docker stack rm catalog
+docker stack rm edm
 sleep 10
 
 # 2. Restore database
 # (see Database Restore above)
 
 # 3. Redeploy
-docker stack deploy -c docker-stack.qa.yaml catalog
+docker stack deploy -c docker-stack.qa.yaml edm
 ```
 
 ---
@@ -528,29 +528,29 @@ EXEC sp_MSforeachtable @command1="DBCC DBREINDEX ('?')";
 
 ```bash
 # Deploy/Update
-cd /opt/apps/catalog && docker stack deploy -c docker-stack.qa.yaml catalog
+cd /opt/apps/edm && docker stack deploy -c docker-stack.qa.yaml edm
 
 # View status
-docker stack services catalog
+docker stack services edm
 
 # Scale
-docker service scale catalog_backend=3
+docker service scale edm_backend=3
 
 # Logs
-docker service logs catalog_backend -f
+docker service logs edm_backend -f
 
 # Backup
 /root/deployment/backup-db.sh
 
 # Restart
-docker service update --force catalog_backend
+docker service update --force edm_backend
 ```
 
 ### File Locations
 
-- Application: `/opt/apps/catalog/`
+- Application: `/opt/apps/edm/`
 - Deployment files: `/root/deployment/`
-- Backups: `/opt/backups/catalog/`
+- Backups: `/opt/backups/edm/`
 - Logs: `docker service logs SERVICE_NAME`
 
 ---
