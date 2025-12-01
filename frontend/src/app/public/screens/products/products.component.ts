@@ -7,10 +7,9 @@ import { StoreService } from 'src/app/shared/services/store.service';
 import { RouterModule } from '@angular/router';
 import { FilterComponent } from 'src/app/shared/components/filter/filter.component';
 @Component({
-    standalone: true,
     imports: [FormsModule, CommonModule, RouterModule, FilterComponent],
     selector: 'app-products',
-    templateUrl: './products.component.html',
+    templateUrl: './products.component.html'
 })
 export class ProductsComponent implements OnInit {
     products: Product[] = [];

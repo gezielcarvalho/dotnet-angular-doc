@@ -7,10 +7,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Subscription } from 'rxjs';
 
 @Component({
-    standalone: true,
     imports: [SidebarIconComponent, FontAwesomeModule],
     selector: 'app-login-button',
-    templateUrl: './login-button.component.html',
+    templateUrl: './login-button.component.html'
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
     faLock = faLock;

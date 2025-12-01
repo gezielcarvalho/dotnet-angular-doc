@@ -15,10 +15,9 @@ import { FolderDTO, TagDTO, CreateDocumentRequest } from '../document.models';
 
 @Component({
     selector: 'app-upload-document',
-    standalone: true,
     imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './upload-document.component.html',
-    styleUrls: ['./upload-document.component.css'],
+    styleUrls: ['./upload-document.component.css']
 })
 export class UploadDocumentComponent implements OnInit {
     uploadForm!: FormGroup;

@@ -13,9 +13,8 @@ import { HeaderComponent } from './shared/components/header/header.component';
 
 @Component({
     selector: 'app-root',
-    standalone: true,
     imports: [CommonModule, RouterModule, HomeComponent, HeaderComponent],
-    templateUrl: './app.component.html',
+    templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
     title = 'ASP.NET Core + Angular Starter';

@@ -6,7 +6,6 @@ import { RecipeStartComponent } from './recipe-start/recipe-start.component';
 import { RouterModule } from '@angular/router';
 
 @Component({
-    standalone: true,
     imports: [
         RecipeListComponent,
         RecipeDetailComponent,
@@ -15,7 +14,7 @@ import { RouterModule } from '@angular/router';
         RouterModule,
     ],
     selector: 'app-recipes',
-    templateUrl: './recipes.component.html',
+    templateUrl: './recipes.component.html'
 })
 export class RecipesComponent {
     constructor() {}

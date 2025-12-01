@@ -13,10 +13,9 @@ import { LoginSchema } from './login.schema';
 
 @Component({
     selector: 'app-login',
-    standalone: true,
     imports: [CommonModule, ReactiveFormsModule, RouterModule],
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css'],
+    styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
     loginForm!: FormGroup;

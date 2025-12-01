@@ -9,10 +9,9 @@ import {
 } from '@angular/forms';
 
 @Component({
-    standalone: true,
     imports: [NgFor, NgIf, ReactiveFormsModule],
     selector: 'app-reactive-form',
-    templateUrl: './reactive-form.component.html',
+    templateUrl: './reactive-form.component.html'
 })
 export class ReactiveFormComponent implements OnInit {
     onAddHobby() {

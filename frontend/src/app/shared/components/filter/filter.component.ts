@@ -5,10 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    standalone: true,
     imports: [FormsModule, CommonModule],
     selector: 'app-filter',
-    templateUrl: './filter.component.html',
+    templateUrl: './filter.component.html'
 })
 export class FilterComponent implements OnInit {
     categories = [

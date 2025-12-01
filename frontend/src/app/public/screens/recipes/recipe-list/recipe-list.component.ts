@@ -6,10 +6,9 @@ import { RecipeService } from 'src/app/shared/services/recipe.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
-    standalone: true,
     imports: [RecipeItemComponent, CommonModule, RouterModule],
     selector: 'app-recipe-list',
-    templateUrl: './recipe-list.component.html',
+    templateUrl: './recipe-list.component.html'
 })
 export class RecipeListComponent implements OnInit {
     @Output() recipeWasSelected = new EventEmitter<Recipe>();

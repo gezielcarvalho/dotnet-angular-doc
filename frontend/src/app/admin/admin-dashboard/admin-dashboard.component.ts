@@ -6,10 +6,9 @@ import { AdminService } from '../admin.service';
 import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
-    standalone: true,
     imports: [CommonModule, RouterModule, FormsModule],
     selector: 'app-admin-dashboard',
-    templateUrl: './admin-dashboard.component.html',
+    templateUrl: './admin-dashboard.component.html'
 })
 export class AdminDashboardComponent implements OnInit {
     isAdmin = false;
