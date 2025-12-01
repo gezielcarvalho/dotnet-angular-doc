@@ -1,9 +1,9 @@
-import { NgFor, NgIf } from '@angular/common';
+
 import { Component, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 
 @Component({
-    imports: [FormsModule, NgIf, NgFor],
+    imports: [FormsModule],
     selector: 'app-template-form',
     templateUrl: './template-form.component.html',
     styleUrls: ['./template-form.component.css']

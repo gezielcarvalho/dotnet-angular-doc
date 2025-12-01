@@ -1,170 +1,184 @@
 <div
-    class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                {{
-                    showRegister
-                        ? 'Create your account'
-                        : 'Sign in to your account'
-                }}
-            </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                {{
-                    showRegister
-                        ? 'Already have an account?'
-                        : "Don't have an account?"
-                }}
-                <button
-                    type="button"
-                    (click)="toggleMode()"
-                    class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none">
-                    {{ showRegister ? 'Sign in' : 'Register' }}
-                </button>
-            </p>
-        </div>
+  class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        {{
+        showRegister
+        ? 'Create your account'
+        : 'Sign in to your account'
+        }}
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        {{
+        showRegister
+        ? 'Already have an account?'
+        : "Don't have an account?"
+        }}
+        <button
+          type="button"
+          (click)="toggleMode()"
+          class="font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none">
+          {{ showRegister ? 'Sign in' : 'Register' }}
+        </button>
+      </p>
+    </div>
 
-        <form
-            class="mt-8 space-y-6"
-            [formGroup]="loginForm"
-            (ngSubmit)="onSubmit()">
-            <!-- Error Message -->
-            <div *ngIf="errorMessage" class="rounded-md bg-red-50 p-4">
-                <div class="flex">
-                    <div class="ml-3">
-                        <h3 class="text-sm font-medium text-red-800">
-                            {{ errorMessage }}
-                        </h3>
-                    </div>
-                </div>
+    <form
+      class="mt-8 space-y-6"
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()">
+      <!-- Error Message -->
+      @if (errorMessage) {
+        <div class="rounded-md bg-red-50 p-4">
+          <div class="flex">
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                {{ errorMessage }}
+              </h3>
             </div>
+          </div>
+        </div>
+      }
 
-            <div class="rounded-md shadow-sm space-y-4">
-                <!-- Username -->
+      <div class="rounded-md shadow-sm space-y-4">
+        <!-- Username -->
+        <div>
+          <label
+            for="username"
+            class="block text-sm font-medium text-gray-700">
+            Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            formControlName="username"
+            class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+            [class.border-red-500]="isFieldInvalid('username')"
+            placeholder="Enter your username" />
+            @if (isFieldInvalid('username')) {
+              <p
+                class="mt-1 text-sm text-red-600">
+                {{ getFieldError('username') }}
+              </p>
+            }
+          </div>
+
+          <!-- Email (Registration only) -->
+          @if (showRegister) {
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                formControlName="email"
+                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                [class.border-red-500]="isFieldInvalid('email')"
+                placeholder="Enter your email" />
+                @if (isFieldInvalid('email')) {
+                  <p
+                    class="mt-1 text-sm text-red-600">
+                    {{ getFieldError('email') }}
+                  </p>
+                }
+              </div>
+            }
+
+            <!-- First Name (Registration only) -->
+            @if (showRegister) {
+              <div>
+                <label
+                  for="firstName"
+                  class="block text-sm font-medium text-gray-700">
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  formControlName="firstName"
+                  class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  [class.border-red-500]="isFieldInvalid('firstName')"
+                  placeholder="Enter your first name" />
+                  @if (isFieldInvalid('firstName')) {
+                    <p
+                      class="mt-1 text-sm text-red-600">
+                      {{ getFieldError('firstName') }}
+                    </p>
+                  }
+                </div>
+              }
+
+              <!-- Last Name (Registration only) -->
+              @if (showRegister) {
                 <div>
-                    <label
-                        for="username"
-                        class="block text-sm font-medium text-gray-700">
-                        Username
-                    </label>
-                    <input
-                        id="username"
-                        name="username"
-                        type="text"
-                        formControlName="username"
-                        class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                        [class.border-red-500]="isFieldInvalid('username')"
-                        placeholder="Enter your username" />
-                    <p
-                        *ngIf="isFieldInvalid('username')"
-                        class="mt-1 text-sm text-red-600">
-                        {{ getFieldError('username') }}
-                    </p>
-                </div>
-
-                <!-- Email (Registration only) -->
-                <div *ngIf="showRegister">
-                    <label
-                        for="email"
-                        class="block text-sm font-medium text-gray-700">
-                        Email address
-                    </label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        formControlName="email"
-                        class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                        [class.border-red-500]="isFieldInvalid('email')"
-                        placeholder="Enter your email" />
-                    <p
-                        *ngIf="isFieldInvalid('email')"
-                        class="mt-1 text-sm text-red-600">
-                        {{ getFieldError('email') }}
-                    </p>
-                </div>
-
-                <!-- First Name (Registration only) -->
-                <div *ngIf="showRegister">
-                    <label
-                        for="firstName"
-                        class="block text-sm font-medium text-gray-700">
-                        First Name
-                    </label>
-                    <input
-                        id="firstName"
-                        name="firstName"
-                        type="text"
-                        formControlName="firstName"
-                        class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                        [class.border-red-500]="isFieldInvalid('firstName')"
-                        placeholder="Enter your first name" />
-                    <p
-                        *ngIf="isFieldInvalid('firstName')"
-                        class="mt-1 text-sm text-red-600">
-                        {{ getFieldError('firstName') }}
-                    </p>
-                </div>
-
-                <!-- Last Name (Registration only) -->
-                <div *ngIf="showRegister">
-                    <label
-                        for="lastName"
-                        class="block text-sm font-medium text-gray-700">
-                        Last Name
-                    </label>
-                    <input
-                        id="lastName"
-                        name="lastName"
-                        type="text"
-                        formControlName="lastName"
-                        class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                        [class.border-red-500]="isFieldInvalid('lastName')"
-                        placeholder="Enter your last name" />
-                    <p
-                        *ngIf="isFieldInvalid('lastName')"
+                  <label
+                    for="lastName"
+                    class="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    formControlName="lastName"
+                    class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    [class.border-red-500]="isFieldInvalid('lastName')"
+                    placeholder="Enter your last name" />
+                    @if (isFieldInvalid('lastName')) {
+                      <p
                         class="mt-1 text-sm text-red-600">
                         {{ getFieldError('lastName') }}
-                    </p>
-                </div>
+                      </p>
+                    }
+                  </div>
+                }
 
                 <!-- Password -->
                 <div>
-                    <label
-                        for="password"
-                        class="block text-sm font-medium text-gray-700">
-                        Password
-                    </label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        formControlName="password"
-                        class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                        [class.border-red-500]="isFieldInvalid('password')"
-                        placeholder="Enter your password" />
+                  <label
+                    for="password"
+                    class="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    formControlName="password"
+                    class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    [class.border-red-500]="isFieldInvalid('password')"
+                    placeholder="Enter your password" />
                     <p class="mt-2 text-sm text-right">
-                        <a
-                            routerLink="/request-password-reset"
-                            class="text-indigo-600 hover:text-indigo-500">
-                            Forgot password?
-                        </a>
+                      <a
+                        routerLink="/request-password-reset"
+                        class="text-indigo-600 hover:text-indigo-500">
+                        Forgot password?
+                      </a>
                     </p>
-                    <p
-                        *ngIf="isFieldInvalid('password')"
+                    @if (isFieldInvalid('password')) {
+                      <p
                         class="mt-1 text-sm text-red-600">
                         {{ getFieldError('password') }}
-                    </p>
-                </div>
+                      </p>
+                    }
+                  </div>
 
-                <!-- Confirm Password (Registration only) -->
-                <div *ngIf="showRegister">
-                    <label
+                  <!-- Confirm Password (Registration only) -->
+                  @if (showRegister) {
+                    <div>
+                      <label
                         for="confirmPassword"
                         class="block text-sm font-medium text-gray-700">
                         Confirm Password
-                    </label>
-                    <input
+                      </label>
+                      <input
                         id="confirmPassword"
                         name="confirmPassword"
                         type="password"
@@ -174,49 +188,52 @@
                             isFieldInvalid('confirmPassword')
                         "
                         placeholder="Confirm your password" />
-                    <p
-                        *ngIf="isFieldInvalid('confirmPassword')"
-                        class="mt-1 text-sm text-red-600">
-                        {{ getFieldError('confirmPassword') }}
-                    </p>
-                </div>
-            </div>
+                        @if (isFieldInvalid('confirmPassword')) {
+                          <p
+                            class="mt-1 text-sm text-red-600">
+                            {{ getFieldError('confirmPassword') }}
+                          </p>
+                        }
+                      </div>
+                    }
+                  </div>
 
-            <div>
-                <button
-                    type="submit"
-                    [disabled]="isLoading"
-                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span
-                        *ngIf="isLoading"
-                        class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <svg
+                  <div>
+                    <button
+                      type="submit"
+                      [disabled]="isLoading"
+                      class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                      @if (isLoading) {
+                        <span
+                          class="absolute left-0 inset-y-0 flex items-center pl-3">
+                          <svg
                             class="animate-spin h-5 w-5 text-white"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24">
                             <circle
-                                class="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                stroke-width="4"></circle>
+                              class="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                            stroke-width="4"></circle>
                             <path
-                                class="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                    </span>
-                    {{
-                        isLoading
-                            ? 'Processing...'
-                            : showRegister
-                            ? 'Register'
-                            : 'Sign in'
-                    }}
-                </button>
+                              class="opacity-75"
+                              fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </span>
+                      }
+                      {{
+                      isLoading
+                      ? 'Processing...'
+                      : showRegister
+                      ? 'Register'
+                      : 'Sign in'
+                      }}
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-        </form>
-    </div>
-</div>

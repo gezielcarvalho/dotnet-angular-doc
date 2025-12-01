@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Product } from '../../../shared/models/Product';
@@ -7,7 +7,7 @@ import { StoreService } from 'src/app/shared/services/store.service';
 import { RouterModule } from '@angular/router';
 import { FilterComponent } from 'src/app/shared/components/filter/filter.component';
 @Component({
-    imports: [FormsModule, CommonModule, RouterModule, FilterComponent],
+    imports: [FormsModule, RouterModule, FilterComponent],
     selector: 'app-products',
     templateUrl: './products.component.html'
 })

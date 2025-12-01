@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
     FormBuilder,
     FormGroup,
@@ -15,7 +15,7 @@ import { FolderDTO, TagDTO, CreateDocumentRequest } from '../document.models';
 
 @Component({
     selector: 'app-upload-document',
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './upload-document.component.html',
     styleUrls: ['./upload-document.component.css']
 })

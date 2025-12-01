@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Filter } from '../../models/Filter';
 import { StoreService } from '../../services/store.service';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
-    imports: [FormsModule, CommonModule],
+    imports: [FormsModule],
     selector: 'app-filter',
     templateUrl: './filter.component.html'
 })

@@ -1,98 +1,108 @@
 <form class="max-w-md mt-8" #formExample="ngForm" (ngSubmit)="onSubmit()">
-    <div
-        id="user-data"
-        ngModelGroup="userData"
-        #userData="ngModelGroup"
-        class="p-2 rounded">
-        <div class="mb-4">
-            <label for="username" class="block text-gray-700">Username</label>
-            <input
-                type="text"
-                id="username"
-                name="username"
-                required
-                class="form-input mt-1 block w-full border-2 rounded p-2"
-                ngModel
-                #username="ngModel" />
+  <div
+    id="user-data"
+    ngModelGroup="userData"
+    #userData="ngModelGroup"
+    class="p-2 rounded">
+    <div class="mb-4">
+      <label for="username" class="block text-gray-700">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+        class="form-input mt-1 block w-full border-2 rounded p-2"
+        ngModel
+        #username="ngModel" />
+        @if (username.touched && !username.valid) {
+          <span
+            class="text-red-600 p-2">
+            Please insert a username
+          </span>
+        }
+      </div>
+      <button
+        class="bg-blue-500 text-white px-4 py-2 rounded"
+        type="button"
+        (click)="suggestUserName()">
+        Suggest an Username
+      </button>
+      <div class="mt-4">
+        <label for="email" class="block text-gray-700">Mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          email
+          required
+          ngModel
+          #email="ngModel"
+          class="form-input mt-1 block w-full border-2 rounded p-2" />
+          @if (email.touched && !email.valid) {
             <span
-                *ngIf="username.touched && !username.valid"
-                class="text-red-600 p-2">
-                Please insert a username
+              class="text-red-600 p-2">
+              Please insert a valid email
             </span>
+          }
         </div>
-        <button
-            class="bg-blue-500 text-white px-4 py-2 rounded"
-            type="button"
-            (click)="suggestUserName()">
-            Suggest an Username
-        </button>
-        <div class="mt-4">
-            <label for="email" class="block text-gray-700">Mail</label>
-            <input
-                type="email"
-                id="email"
-                name="email"
-                email
-                required
-                ngModel
-                #email="ngModel"
-                class="form-input mt-1 block w-full border-2 rounded p-2" />
-            <span
-                *ngIf="email.touched && !email.valid"
-                class="text-red-600 p-2">
-                Please insert a valid email
-            </span>
-        </div>
-    </div>
-    <p *ngIf="userData.touched && !userData.valid" class="text-red-600 p-2">
-        User Data is not valid
-    </p>
-    <div class="mt-4">
+      </div>
+      @if (userData.touched && !userData.valid) {
+        <p class="text-red-600 p-2">
+          User Data is not valid
+        </p>
+      }
+      <div class="mt-4">
         <label for="secret" class="block text-gray-700">Secret Questions</label>
         <select
-            id="secret"
-            name="secret"
-            [ngModel]="defaultQuestion"
-            required
-            ngModel
-            class="form-select mt-1 block w-full border-2 rounded p-2">
-            <option value="pet">Your first Pet?</option>
-            <option value="teacher">Your first teacher?</option>
+          id="secret"
+          name="secret"
+          [ngModel]="defaultQuestion"
+          required
+          ngModel
+          class="form-select mt-1 block w-full border-2 rounded p-2">
+          <option value="pet">Your first Pet?</option>
+          <option value="teacher">Your first teacher?</option>
         </select>
-    </div>
-    <div class="mt-4">
+      </div>
+      <div class="mt-4">
         <label for="answer" class="block text-gray-700">Answer</label>
         <textarea
-            id="answer"
-            name="answer"
-            required
-            ngModel
-            #answer="ngModel"
-            rows="3"
-            class="form-textarea mt-1 block w-full border-2 rounded p-2"></textarea>
-        <span *ngIf="answer.touched && !answer.valid" class="text-red-600 p-2">
+          id="answer"
+          name="answer"
+          required
+          ngModel
+          #answer="ngModel"
+          rows="3"
+        class="form-textarea mt-1 block w-full border-2 rounded p-2"></textarea>
+        @if (answer.touched && !answer.valid) {
+          <span class="text-red-600 p-2">
             Please insert an answer
-        </span>
-        <p *ngIf="answer.valid">Your reply: {{ answer.value }}</p>
-        <div *ngFor="let item of genders">
+          </span>
+        }
+        @if (answer.valid) {
+          <p>Your reply: {{ answer.value }}</p>
+        }
+        @for (item of genders; track item) {
+          <div>
             <input
-                type="radio"
-                name="gender"
-                id="gender"
-                [ngModel]="defaultGender"
-                [value]="item"
-                required />
-            {{ item }}
+              type="radio"
+              name="gender"
+              id="gender"
+              [ngModel]="defaultGender"
+              [value]="item"
+              required />
+              {{ item }}
+            </div>
+          }
         </div>
-    </div>
-    <button
+        <button
         [class]="
             formExample.valid
                 ? 'bg-green-500 text-white px-4 py-2 rounded mt-4'
                 : 'bg-gray-500 text-white px-4 py-2 rounded mt-4'
         "
-        [disabled]="!formExample.valid"
-        type="submit">
-        Submit
-    </button>
-</form>
+          [disabled]="!formExample.valid"
+          type="submit">
+          Submit
+        </button>
+      </form>

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -17,7 +17,7 @@ import {
 
 @Component({
     selector: 'app-document-list',
-    imports: [CommonModule, FormsModule],
+    imports: [FormsModule],
     templateUrl: './document-list.component.html',
     styleUrls: ['./document-list.component.css']
 })

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
@@ -7,7 +7,7 @@ import { HttpClientModule } from '@angular/common/http';
 @Component({
     selector: 'app-request-password-reset',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './request-password-reset.component.html',
 })
 export class RequestPasswordResetComponent {

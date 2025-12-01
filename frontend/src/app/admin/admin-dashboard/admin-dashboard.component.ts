@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../admin.service';
 import { AuthService } from 'src/app/shared/services/auth.service';
 
 @Component({
-    imports: [CommonModule, RouterModule, FormsModule],
+    imports: [RouterModule, FormsModule],
     selector: 'app-admin-dashboard',
     templateUrl: './admin-dashboard.component.html'
 })

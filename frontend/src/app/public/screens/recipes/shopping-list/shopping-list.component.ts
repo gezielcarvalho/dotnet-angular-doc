@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ShoppingEditComponent } from './shopping-edit/shopping-edit.component';
 import { Ingredient } from 'src/app/shared/models/ingredients.model';
-import { CommonModule } from '@angular/common';
+
 import { ShoppingListService } from 'src/app/shared/services/shopping-list.service';
 
 @Component({
-    imports: [ShoppingEditComponent, CommonModule],
+    imports: [ShoppingEditComponent],
     selector: 'app-shopping-list',
     templateUrl: './shopping-list.component.html'
 })

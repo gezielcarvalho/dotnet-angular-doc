@@ -1,65 +1,67 @@
 <div class="recipe-card">
-    <div class="flex flex-row">
-        <div class="flex flex-col">
-            <img
-                [src]="recipe?.imagePath"
-                class="h-12"
-                alt="{{ recipe?.name }}" />
-        </div>
+  <div class="flex flex-row">
+    <div class="flex flex-col">
+      <img
+        [src]="recipe?.imagePath"
+        class="h-12"
+        alt="{{ recipe?.name }}" />
+      </div>
     </div>
     <div class="flex flex-row">
-        <div class="flex flex-col w-full">
-            <h4 class="text-lg font-semibold">{{ recipe?.name }}</h4>
-        </div>
+      <div class="flex flex-col w-full">
+        <h4 class="text-lg font-semibold">{{ recipe?.name }}</h4>
+      </div>
     </div>
     <div class="flex flex-row">
-        <div class="flex flex-col">
-            <button
-                class="manage-recipe-button"
-                mat-button
-                [matMenuTriggerFor]="menu">
-                Manage Recipe
-                <svg
-                    class="w-2.5 h-2.5 ms-2.5"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 10 6">
-                    <path
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="m1 1 4 4 4-4" />
-                </svg>
-            </button>
+      <div class="flex flex-col">
+        <button
+          class="manage-recipe-button"
+          mat-button
+          [matMenuTriggerFor]="menu">
+          Manage Recipe
+          <svg
+            class="w-2.5 h-2.5 ms-2.5"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 10 6">
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m1 1 4 4 4-4" />
+            </svg>
+          </button>
 
-            <mat-menu #menu="matMenu">
-                <button mat-menu-item (click)="onAddToShoppingList()">
-                    To Shopping List
-                </button>
-                <button mat-menu-item (click)="onEditRecipe()">
-                    Edit Recipe
-                </button>
-                <button mat-menu-item (click)="onDeleteRecipe()">
-                    Delete Recipe
-                </button>
-            </mat-menu>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onAddToShoppingList()">
+              To Shopping List
+            </button>
+            <button mat-menu-item (click)="onEditRecipe()">
+              Edit Recipe
+            </button>
+            <button mat-menu-item (click)="onDeleteRecipe()">
+              Delete Recipe
+            </button>
+          </mat-menu>
         </div>
-    </div>
-    <div class="flex flex-row">
+      </div>
+      <div class="flex flex-row">
         <div class="flex flex-col w-full">
-            <p class="text-md text-gray-500">{{ recipe?.description }}</p>
+          <p class="text-md text-gray-500">{{ recipe?.description }}</p>
         </div>
-    </div>
-    <div class="flex flex-row">
+      </div>
+      <div class="flex flex-row">
         <div class="flex flex-col w-full">
-            <h4 class="text-lg font-semibold">Ingredients</h4>
-            <ul class="divide-y divide-gray-200">
-                <li *ngFor="let ingredient of recipe?.ingredients" class="py-2">
-                    {{ ingredient.name }} ({{ ingredient.amount }})
-                </li>
-            </ul>
+          <h4 class="text-lg font-semibold">Ingredients</h4>
+          <ul class="divide-y divide-gray-200">
+            @for (ingredient of recipe?.ingredients; track ingredient) {
+              <li class="py-2">
+                {{ ingredient.name }} ({{ ingredient.amount }})
+              </li>
+            }
+          </ul>
         </div>
+      </div>
     </div>
-</div>

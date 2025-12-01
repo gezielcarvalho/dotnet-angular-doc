@@ -1,17 +1,18 @@
 <div class="flex flex-row">
-    <div class="w-4/5">
-        <app-shopping-edit />
-        <hr />
-        <div class="flex flex-row">
-            <div class="flex flex-col w-full">
-                <a
-                    *ngFor="let ingredient of ingredients"
-                    class="flex border-2 rounded-md items-center justify-between p-4 border-b border-gray-200 hover:bg-gray-50"
-                >
-                    <div>{{ ingredient.name }} ({{ ingredient.amount }})</div>
-                </a>
-            </div>
-        </div>
+  <div class="w-4/5">
+    <app-shopping-edit />
+    <hr />
+    <div class="flex flex-row">
+      <div class="flex flex-col w-full">
+        @for (ingredient of ingredients; track ingredient) {
+          <a
+            class="flex border-2 rounded-md items-center justify-between p-4 border-b border-gray-200 hover:bg-gray-50"
+            >
+            <div>{{ ingredient.name }} ({{ ingredient.amount }})</div>
+          </a>
+        }
+      </div>
     </div>
-    <div class="w-1/5"></div>
+  </div>
+  <div class="w-1/5"></div>
 </div>

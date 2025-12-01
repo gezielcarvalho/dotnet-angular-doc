@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
     RouterModule,
     Router,
@@ -13,7 +13,7 @@ import { HeaderComponent } from './shared/components/header/header.component';
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, RouterModule, HomeComponent, HeaderComponent],
+    imports: [RouterModule, HomeComponent, HeaderComponent],
     templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {

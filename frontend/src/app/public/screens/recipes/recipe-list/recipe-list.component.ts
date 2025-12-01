@@ -1,12 +1,12 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { RecipeItemComponent } from './recipe-item/recipe-item.component';
 import { Recipe } from '../../../../shared/models/recipe.model';
-import { CommonModule } from '@angular/common';
+
 import { RecipeService } from 'src/app/shared/services/recipe.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
-    imports: [RecipeItemComponent, CommonModule, RouterModule],
+    imports: [RecipeItemComponent, RouterModule],
     selector: 'app-recipe-list',
     templateUrl: './recipe-list.component.html'
 })

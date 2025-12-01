@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+
 import { Component, OnInit } from '@angular/core';
 import {
     FormArray,
@@ -9,7 +9,7 @@ import {
 } from '@angular/forms';
 
 @Component({
-    imports: [NgFor, NgIf, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     selector: 'app-reactive-form',
     templateUrl: './reactive-form.component.html'
 })

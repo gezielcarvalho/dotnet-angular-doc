@@ -2,28 +2,30 @@
 
 <app-filter />
 <select
-    [(ngModel)]="storeService.pageSize"
-    (change)="onPageSizeChange()"
-    id="pageSize">
-    <option value="3">3</option>
-    <option value="5">5</option>
-    <option value="10">10</option>
-    <option value="50">50</option>
+  [(ngModel)]="storeService.pageSize"
+  (change)="onPageSizeChange()"
+  id="pageSize">
+  <option value="3">3</option>
+  <option value="5">5</option>
+  <option value="10">10</option>
+  <option value="50">50</option>
 </select>
 <br />
 <div class="row">
-    <div *ngFor="let product of storeService.products">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <a href="#" [routerLink]="['/products', product.id]">
-                        {{ product.name }}
-                    </a>
-                </h5>
-                <p class="card-subtitle mb-2 text-muted">
-                    ${{ product.price }}
-                </p>
-            </div>
+  @for (product of storeService.products; track product) {
+    <div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">
+            <a href="#" [routerLink]="['/products', product.id]">
+              {{ product.name }}
+            </a>
+          </h5>
+          <p class="card-subtitle mb-2 text-muted">
+            ${{ product.price }}
+          </p>
         </div>
+      </div>
     </div>
+  }
 </div>
