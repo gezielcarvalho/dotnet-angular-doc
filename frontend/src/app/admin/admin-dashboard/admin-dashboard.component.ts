@@ -16,6 +16,11 @@ export class AdminDashboardComponent implements OnInit {
     running = false;
     resultMessage: string | null = null;
     createdCount: number | null = null;
+    // specific user creation
+    userIdToCreate = '';
+    creatingUser = false;
+    createUserResultMessage: string | null = null;
+    createUserCreated: boolean | null = null;
 
     constructor(
         private adminService: AdminService,
@@ -50,6 +55,33 @@ export class AdminDashboardComponent implements OnInit {
                     (err?.message ?? JSON.stringify(err));
             },
         );
+    }
+
+    createPersonalFolderForUser(): void {
+        if (!this.isAdmin || !this.userIdToCreate) return;
+        this.creatingUser = true;
+        this.createUserResultMessage = null;
+        this.createUserCreated = null;
+        this.adminService
+            .createPersonalFolderForUser(this.userIdToCreate)
+            .subscribe(
+                resp => {
+                    this.creatingUser = false;
+                    if (resp.success) {
+                        this.createUserCreated = !!resp.data;
+                        this.createUserResultMessage = resp.message;
+                    } else {
+                        this.createUserResultMessage =
+                            resp.message || 'Create returned an error';
+                    }
+                },
+                err => {
+                    this.creatingUser = false;
+                    this.createUserResultMessage =
+                        'Create failed: ' +
+                        (err?.message ?? JSON.stringify(err));
+                },
+            );
     }
 
     goHome(): void {

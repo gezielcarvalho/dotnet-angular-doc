@@ -22,4 +22,16 @@ export class AdminService {
             {},
         );
     }
+
+    /**
+     * Create a personal folder for a specific user (admin only)
+     */
+    createPersonalFolderForUser(
+        userId: string,
+    ): Observable<ApiResponse<boolean>> {
+        return this.http.post<ApiResponse<boolean>>(
+            `${this.apiUrl}/create-personal-folder/${userId}`,
+            {},
+        );
+    }
 }

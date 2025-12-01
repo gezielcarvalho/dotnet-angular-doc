@@ -40,4 +40,24 @@ public class AdminController : ControllerBase
             return StatusCode(500, ApiResponse<int>.ErrorResponse("Migration failed", new List<string> { ex.Message }));
         }
     }
+
+    [Authorize(Roles = "Admin,SystemAdmin")]
+    [HttpPost("create-personal-folder/{userId}")]
+    public async Task<ActionResult<ApiResponse<bool>>> CreatePersonalFolderForUser(Guid userId)
+    {
+        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        if (role != "Admin" && role != "SystemAdmin") return Forbid();
+        try
+        {
+            var created = await DbSeeder.EnsurePersonalFolderForUser(_context, userId);
+            if (!created)
+                return Ok(ApiResponse<bool>.SuccessResponse(false, "Folder already exists or user not found"));
+            return Ok(ApiResponse<bool>.SuccessResponse(true, "Personal folder created"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create personal folder for user {UserId}", userId);
+            return StatusCode(500, ApiResponse<bool>.ErrorResponse("Creation failed", new List<string> { ex.Message }));
+        }
+    }
 }

@@ -96,11 +96,11 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         // Create personal folder for this user under the 'Users' system folder
-        try
-        {
-            // Find users parent system folder; create if missing
-            var usersParent = await _context.Folders.FirstOrDefaultAsync(f => f.Name == "Users" && f.IsSystemFolder && f.ParentFolderId != null);
-            if (usersParent == null)
+            try
+            {
+                // Find users parent system folder; be tolerant about parent - some deployments keep Users under Root, others at root level
+                var usersParent = await _context.Folders.FirstOrDefaultAsync(f => f.Name == "Users" && f.IsSystemFolder);
+                if (usersParent == null)
             {
                 // Fallback: find root
                 var root = await _context.Folders.FirstOrDefaultAsync(f => f.ParentFolderId == null);
@@ -133,7 +133,8 @@ public class AuthService : IAuthService
                     Level = root.Level + 1,
                     ParentFolderId = root.Id,
                     IsSystemFolder = true,
-                    OwnerId = user.Id, // set temporarily to new user; can be changed to admin
+                    // Prefer to set owner to an existing SystemAdmin or Admin, fallback to Guid.Empty
+                    OwnerId = (await _context.Users.FirstOrDefaultAsync(u => u.Role == "SystemAdmin" || u.Role == "Admin"))?.Id ?? Guid.Empty,
                     IsDeleted = false,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = user.Username
@@ -142,7 +143,11 @@ public class AuthService : IAuthService
                 await _context.SaveChangesAsync();
             }
 
-            var personalFolder = new Folder
+            // Idempotent: check for existing personal folder for the new user
+            var personalFolder = await _context.Folders.FirstOrDefaultAsync(f => f.ParentFolderId == usersParent.Id && f.OwnerId == user.Id);
+            if (personalFolder == null)
+            {
+                personalFolder = new Folder
             {
                 Id = Guid.NewGuid(),
                 Name = user.Username,
@@ -156,11 +161,20 @@ public class AuthService : IAuthService
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = user.Username
             };
-            _context.Folders.Add(personalFolder);
-            await _context.SaveChangesAsync();
+                _context.Folders.Add(personalFolder);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Created personal folder {FolderPath} for user {Username}({UserId})", personalFolder.Path, user.Username, user.Id);
+            }
+            else
+            {
+                _logger.LogDebug("Personal folder already exists for user {Username}({UserId}): {FolderId}", user.Username, user.Id, personalFolder.Id);
+            }
 
             // Add explicit admin permission for the user for their personal folder
-            var permission = new Backend.Models.Document.Permission
+            var permission = await _context.Permissions.FirstOrDefaultAsync(p => p.UserId == user.Id && p.FolderId == personalFolder.Id);
+            if (permission == null)
+            {
+                permission = new Backend.Models.Document.Permission
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
@@ -172,12 +186,20 @@ public class AuthService : IAuthService
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = user.Username
             };
-            _context.Permissions.Add(permission);
-            await _context.SaveChangesAsync();
-        }
+                _context.Permissions.Add(permission);
+                await _context.SaveChangesAsync();
+                _logger.LogInformation("Granted {PermissionType} permission for folder {FolderId} to user {Username}({UserId})", permission.PermissionType, personalFolder.Id, user.Username, user.Id);
+            }
+            else
+            {
+                _logger.LogDebug("Permission already exists for user {Username}({UserId}) on folder {FolderId}", user.Username, user.Id, personalFolder.Id);
+            }
+            }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to create personal folder for user {Username}", user.Username);
+            // Re-throwing or setting a flag could be considered, but we log and continue to allow registration to succeed.
+            // Optionally, the Admin migration endpoint can be used to ensure any failed creations are fixed.
         }
 
         var token = GenerateJwtToken(user);

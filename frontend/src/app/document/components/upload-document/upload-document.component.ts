@@ -131,6 +131,85 @@ export class UploadDocumentComponent implements OnInit {
                                     }
                                 },
                             });
+                    } else if (currentUser) {
+                        // Users folder not at root; try under 'Root' as a fallback
+                        const rootFolder = this.folders.find(
+                            f => f.name === 'Root',
+                        );
+                        if (rootFolder) {
+                            this.folderService
+                                .getSubFolders(rootFolder.id)
+                                .subscribe({
+                                    next: rootSubResp => {
+                                        if (
+                                            rootSubResp.success &&
+                                            rootSubResp.data
+                                        ) {
+                                            const usersFromRoot =
+                                                rootSubResp.data.find(
+                                                    sf => sf.name === 'Users',
+                                                );
+                                            if (usersFromRoot) {
+                                                this.folderService
+                                                    .getSubFolders(
+                                                        usersFromRoot.id,
+                                                    )
+                                                    .subscribe({
+                                                        next: usersSubResp => {
+                                                            if (
+                                                                usersSubResp.success &&
+                                                                usersSubResp.data
+                                                            ) {
+                                                                const personal =
+                                                                    usersSubResp.data.find(
+                                                                        sf =>
+                                                                            sf.ownerId ===
+                                                                            currentUser.id,
+                                                                    );
+                                                                if (personal) {
+                                                                    if (
+                                                                        !this.folders.some(
+                                                                            f =>
+                                                                                f.id ===
+                                                                                personal.id,
+                                                                        )
+                                                                    ) {
+                                                                        this.folders.push(
+                                                                            personal,
+                                                                        );
+                                                                    }
+                                                                    if (
+                                                                        !this
+                                                                            .uploadForm
+                                                                            .value
+                                                                            .folderId
+                                                                    ) {
+                                                                        this.uploadForm.patchValue(
+                                                                            {
+                                                                                folderId:
+                                                                                    personal.id,
+                                                                            },
+                                                                        );
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        error: err =>
+                                                            console.error(
+                                                                '[UploadDocument] error fetching Users subfolders under Root:',
+                                                                err,
+                                                            ),
+                                                    });
+                                            }
+                                        }
+                                    },
+                                    error: err =>
+                                        console.error(
+                                            '[UploadDocument] error fetching Root subfolders:',
+                                            err,
+                                        ),
+                                });
+                        }
                     }
                     console.debug(
                         '[UploadDocument] loaded folders',

@@ -13,6 +13,7 @@ describe('AdminDashboardComponent', () => {
     beforeEach(async () => {
         mockAdminService = jasmine.createSpyObj('AdminService', [
             'runPersonalFolderMigration',
+            'createPersonalFolderForUser',
         ]);
 
         await TestBed.configureTestingModule({
@@ -55,5 +56,38 @@ describe('AdminDashboardComponent', () => {
         // Click and assert the service was called
         (button as HTMLButtonElement).click();
         expect(mockAdminService.runPersonalFolderMigration).toHaveBeenCalled();
+    });
+
+    it('should call createPersonalFolderForUser when clicking create button', () => {
+        TestBed.overrideProvider(AuthService, {
+            useValue: { isAdmin: () => true },
+        });
+        mockAdminService.createPersonalFolderForUser.and.returnValue(
+            of({ success: true, message: 'created', data: true }),
+        );
+
+        fixture = TestBed.createComponent(AdminDashboardComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+
+        // set a user id in the input and click the create button
+        const compiled = fixture.nativeElement as HTMLElement;
+        const input = compiled.querySelector(
+            '#userIdInput',
+        ) as HTMLInputElement;
+        const createButton = compiled.querySelector(
+            '#createPersonalFolderBtn',
+        ) as HTMLButtonElement;
+        expect(input).toBeTruthy();
+        expect(createButton).toBeTruthy();
+
+        input.value = '00000000-0000-0000-0000-000000000000';
+        input.dispatchEvent(new Event('input'));
+        fixture.detectChanges();
+
+        createButton.click();
+        expect(
+            mockAdminService.createPersonalFolderForUser,
+        ).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000000');
     });
 });

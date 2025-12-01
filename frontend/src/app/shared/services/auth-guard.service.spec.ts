@@ -48,6 +48,11 @@ describe('AuthGuard', () => {
         const result = await guard.canActivate({} as any, {} as any);
 
         expect(result).toBe(false);
-        expect(router.navigate).toHaveBeenCalledWith(['/']);
+        expect(router.navigate).toHaveBeenCalledWith(
+            ['/login'],
+            jasmine.objectContaining({
+                queryParams: jasmine.objectContaining({ returnUrl: undefined }),
+            }),
+        );
     });
 });

@@ -24,6 +24,33 @@
             <span *ngIf="running">Running migration...</span>
         </button>
 
+        <hr class="my-4" />
+
+        <div class="mt-4">
+            <p class="mb-2">Create personal folder for a specific user</p>
+            <div class="flex gap-2 items-center mb-2">
+                <input
+                    id="userIdInput"
+                    class="form-input"
+                    [(ngModel)]="userIdToCreate"
+                    placeholder="Enter user ID (GUID)" />
+                <button
+                    id="createPersonalFolderBtn"
+                    class="btn btn-secondary"
+                    (click)="createPersonalFolderForUser()"
+                    [disabled]="creatingUser || !userIdToCreate">
+                    <span *ngIf="!creatingUser">Create Personal Folder</span>
+                    <span *ngIf="creatingUser">Creating...</span>
+                </button>
+            </div>
+            <div *ngIf="createUserResultMessage">
+                <p><strong>Result:</strong> {{ createUserResultMessage }}</p>
+                <p *ngIf="createUserCreated !== null">
+                    Created: {{ createUserCreated }}
+                </p>
+            </div>
+        </div>
+
         <div *ngIf="resultMessage" class="mt-4">
             <p><strong>Result:</strong> {{ resultMessage }}</p>
             <p *ngIf="createdCount !== null">Created: {{ createdCount }}</p>

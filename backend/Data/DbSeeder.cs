@@ -283,4 +283,100 @@ public static class DbSeeder
             }
             return createdCount;
         }
+
+        public static async Task<bool> EnsurePersonalFolderForUser(DocumentDbContext context, Guid userId)
+        {
+            // Validate user
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
+            if (user == null)
+                return false;
+
+            // Ensure root exists
+            var root = await context.Folders.FirstOrDefaultAsync(f => f.ParentFolderId == null);
+            if (root == null)
+            {
+                root = new Folder
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Root",
+                    Description = "Root folder",
+                    Path = "/Root/",
+                    Level = 0,
+                    ParentFolderId = null,
+                    IsSystemFolder = true,
+                    OwnerId = (await context.Users.FirstOrDefaultAsync(u => u.Role == "SystemAdmin" || u.Role == "Admin"))?.Id ?? Guid.Empty,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = "System"
+                };
+                context.Folders.Add(root);
+                await context.SaveChangesAsync();
+            }
+
+            // Ensure Users folder exists
+            var usersFolder = await context.Folders.FirstOrDefaultAsync(f => f.Name == "Users" && f.ParentFolderId == root.Id && f.IsSystemFolder);
+            if (usersFolder == null)
+            {
+                usersFolder = new Folder
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Users",
+                    Description = "Personal folders for users",
+                    Path = $"{root.Path}Users/",
+                    Level = root.Level + 1,
+                    ParentFolderId = root.Id,
+                    IsSystemFolder = true,
+                    OwnerId = (await context.Users.FirstOrDefaultAsync(u => u.Role == "SystemAdmin" || u.Role == "Admin"))?.Id ?? Guid.Empty,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = "System"
+                };
+                context.Folders.Add(usersFolder);
+                await context.SaveChangesAsync();
+            }
+
+            // Create personal folder for user if missing
+            var personal = await context.Folders.FirstOrDefaultAsync(f => f.ParentFolderId == usersFolder.Id && f.OwnerId == user.Id);
+            if (personal != null)
+                return false; // Not created because it already exists
+
+            personal = new Folder
+            {
+                Id = Guid.NewGuid(),
+                Name = user.Username,
+                Description = $"Personal folder for {user.Username}",
+                Path = $"{usersFolder.Path}{user.Username}/",
+                Level = usersFolder.Level + 1,
+                ParentFolderId = usersFolder.Id,
+                IsSystemFolder = false,
+                OwnerId = user.Id,
+                IsDeleted = false,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = "System"
+            };
+            context.Folders.Add(personal);
+            await context.SaveChangesAsync();
+
+            // Add explicit admin permission for the user's personal folder (if not exists)
+            var permission = await context.Permissions.FirstOrDefaultAsync(p => p.UserId == user.Id && p.FolderId == personal.Id);
+            if (permission == null)
+            {
+                permission = new Permission
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    FolderId = personal.Id,
+                    PermissionType = "Admin",
+                    IsInherited = false,
+                    GrantedAt = DateTime.UtcNow,
+                    GrantedBy = "System",
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = "System"
+                };
+                context.Permissions.Add(permission);
+                await context.SaveChangesAsync();
+            }
+
+            return true; // Created
+        }
 }
