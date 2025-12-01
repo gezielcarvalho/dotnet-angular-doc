@@ -9,6 +9,7 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { LoginRequest } from '../../../shared/models/auth.models';
+import { LoginSchema } from './login.schema';
 
 @Component({
     selector: 'app-login',
@@ -98,6 +99,12 @@ export class LoginComponent implements OnInit {
             username: this.loginForm.value.username,
             password: this.loginForm.value.password,
         };
+
+        if (LoginSchema.safeParse(credentials).success === false) {
+            this.errorMessage = 'Invalid login data';
+            this.isLoading = false;
+            return;
+        }
 
         this.authService.login(credentials).subscribe({
             next: response => {

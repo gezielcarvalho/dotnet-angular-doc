@@ -1,7 +1,7 @@
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
+import { LoginSchema } from 'src/app/public/screens/login/login.schema';
+import z from 'zod';
+
+export type LoginRequest = z.infer<typeof LoginSchema>;
 
 export interface RegisterRequest {
     username: string;
