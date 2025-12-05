@@ -4,7 +4,7 @@
     "scripts": {
         "ng": "ng",
         "start": "ng serve --proxy-config proxy.conf.json",
-        "start:docker": "ng serve --host 0.0.0.0 --proxy-config proxy.docker.conf.json --poll 2000 --disable-host-check",
+        "start:docker": "ng serve --host 0.0.0.0 --proxy-config proxy.docker.conf.json --poll 2000",
         "start:host": "ng serve --proxy-config proxy.conf.json",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
