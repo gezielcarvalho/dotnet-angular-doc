@@ -1,4 +1,3 @@
-
 import { Component, OnInit } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute } from '@angular/router';
@@ -6,10 +5,11 @@ import { Recipe } from 'src/app/shared/models/recipe.model';
 import { RecipeService } from 'src/app/shared/services/recipe.service';
 
 @Component({
+    standalone: true,
     imports: [MatMenuModule],
     selector: 'app-recipe-edit',
     templateUrl: './recipe-edit.component.html',
-    styleUrls: ['./recipe-edit.component.css']
+    styleUrls: ['./recipe-edit.component.css'],
 })
 export class RecipeEditComponent implements OnInit {
     recipe: Recipe | undefined;

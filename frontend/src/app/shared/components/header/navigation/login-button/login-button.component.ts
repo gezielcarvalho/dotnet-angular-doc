@@ -2,14 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
 import { AuthService } from 'src/app/shared/services/auth.service';
-import { SidebarIconComponent } from '../../sidebar/sidebar-icon/sidebar-icon.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { Subscription } from 'rxjs';
 
 @Component({
-    imports: [SidebarIconComponent, FontAwesomeModule],
+    standalone: true,
+    imports: [FontAwesomeModule],
     selector: 'app-login-button',
-    templateUrl: './login-button.component.html'
+    templateUrl: './login-button.component.html',
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
     faLock = faLock;

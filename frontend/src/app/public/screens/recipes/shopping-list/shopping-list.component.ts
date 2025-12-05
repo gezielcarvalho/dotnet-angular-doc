@@ -5,9 +5,10 @@ import { Ingredient } from 'src/app/shared/models/ingredients.model';
 import { ShoppingListService } from 'src/app/shared/services/shopping-list.service';
 
 @Component({
+    standalone: true,
     imports: [ShoppingEditComponent],
     selector: 'app-shopping-list',
-    templateUrl: './shopping-list.component.html'
+    templateUrl: './shopping-list.component.html',
 })
 export class ShoppingListComponent implements OnInit, OnDestroy {
     ingredients: Ingredient[] = [];

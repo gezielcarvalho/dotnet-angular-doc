@@ -8,13 +8,13 @@ import {
     NavigationCancel,
     NavigationError,
 } from '@angular/router';
-import { HomeComponent } from './public/screens/home/home.component';
 import { HeaderComponent } from './shared/components/header/header.component';
 
 @Component({
     selector: 'app-root',
-    imports: [RouterModule, HomeComponent, HeaderComponent],
-    templateUrl: './app.component.html'
+    standalone: true,
+    imports: [RouterModule, HeaderComponent],
+    templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
     title = 'ASP.NET Core + Angular Starter';

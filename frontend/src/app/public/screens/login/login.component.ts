@@ -9,13 +9,13 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../shared/services/auth.service';
 import { LoginRequest } from '../../../shared/models/auth.models';
-import { LoginSchema } from './login.schema';
+import { loginSchema } from './login.schema';
 
 @Component({
     selector: 'app-login',
     imports: [ReactiveFormsModule, RouterModule],
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css']
+    styleUrls: ['./login.component.css'],
 })
 export class LoginComponent implements OnInit {
     loginForm!: FormGroup;
@@ -99,7 +99,7 @@ export class LoginComponent implements OnInit {
             password: this.loginForm.value.password,
         };
 
-        if (LoginSchema.safeParse(credentials).success === false) {
+        if (loginSchema.safeParse(credentials).success === false) {
             this.errorMessage = 'Invalid login data';
             this.isLoading = false;
             return;

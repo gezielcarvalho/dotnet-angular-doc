@@ -1,4 +1,3 @@
-
 import { Component, Input, OnInit } from '@angular/core';
 import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute } from '@angular/router';
@@ -6,10 +5,11 @@ import { Recipe } from 'src/app/shared/models/recipe.model';
 import { RecipeService } from 'src/app/shared/services/recipe.service';
 
 @Component({
+    standalone: true,
     imports: [MatMenuModule],
     selector: 'app-recipe-detail',
     templateUrl: './recipe-detail.component.html',
-    styleUrls: ['./recipe-detail.component.css']
+    styleUrls: ['./recipe-detail.component.css'],
 })
 export class RecipeDetailComponent implements OnInit {
     @Input() recipe: Recipe | undefined;

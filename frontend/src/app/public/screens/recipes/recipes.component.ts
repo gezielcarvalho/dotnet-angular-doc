@@ -1,19 +1,13 @@
 import { Component } from '@angular/core';
 import { RecipeListComponent } from './recipe-list/recipe-list.component';
-import { RecipeDetailComponent } from './recipe-detail/recipe-detail.component';
-
-import { RecipeStartComponent } from './recipe-start/recipe-start.component';
+// RecipeDetailComponent and RecipeStartComponent are not used directly in this template; they are child route targets
 import { RouterModule } from '@angular/router';
 
 @Component({
-    imports: [
-    RecipeListComponent,
-    RecipeDetailComponent,
-    RecipeStartComponent,
-    RouterModule
-],
+    standalone: true,
+    imports: [RecipeListComponent, RouterModule],
     selector: 'app-recipes',
-    templateUrl: './recipes.component.html'
+    templateUrl: './recipes.component.html',
 })
 export class RecipesComponent {
     constructor() {}
