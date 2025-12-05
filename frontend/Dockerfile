@@ -5,7 +5,7 @@ WORKDIR /app
 # Install dependencies
 FROM base AS dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Development stage with hot reload
 FROM dependencies AS development
