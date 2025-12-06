@@ -1,8 +1,8 @@
 pipeline {
     agent any
     
-    environment {
-        DOCKER_REGISTRY = 'localhost:5000'
+        // Trigger on push/merge to main branch
+        githubPush()
         STACK_NAME = 'edm'
         COMPOSE_FILE = 'docker-stack.qa.yaml'
         SA_PASSWORD = credentials('sql-server-password')  // Configure in Jenkins credentials
@@ -25,10 +25,10 @@ pipeline {
             steps {
                 echo 'Checking out source code...'
                 checkout scm
-                script {
-                    env.GIT_COMMIT_MSG = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
-                    env.GIT_AUTHOR = sh(script: 'git log -1 --pretty=%an', returnStdout: true).trim()
-                    env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    // Only deploy from main branch
+                    if (branch != 'main') {
+                        error("Pipeline should only run on 'main' branch. Current branch: ${branch}")
+                    }
                 }
                 echo "Commit: ${env.GIT_COMMIT_SHORT} by ${env.GIT_AUTHOR}"
                 echo "Message: ${env.GIT_COMMIT_MSG}"

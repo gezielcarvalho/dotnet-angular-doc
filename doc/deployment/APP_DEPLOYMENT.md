@@ -31,41 +31,48 @@ Before deploying the application, ensure:
 
 ---
 
-## Step 1: Prepare Configuration Files
+## Step 1: CI/CD Deployment Flow
 
-### 1.1 Create Environment File
+### 1.1 Automated Deployment with Jenkins
 
-Create `.env` with your configuration:
+Deployment is triggered automatically when you push or merge to the `main` branch on GitHub:
 
-```bash
-# Database Configuration
-SA_PASSWORD=YOUR_STRONG_PASSWORD_HERE
-MSSQL_PID=Developer
+1. GitHub webhook notifies Jenkins of changes to `main`.
+2. Jenkins checks out the latest code, builds Docker images, and deploys the stack using Docker Swarm.
+3. No manual file uploads are required; all configuration and code are managed in version control.
 
-# Backend Configuration
-ASPNETCORE_ENVIRONMENT=Production
-ASPNETCORE_URLS=http://+:80
+**Manual scripts (`deploy-app.sh`, `backup-db.sh`) are available for fallback or maintenance, but are not required for normal deployment.**
 
-# Frontend Configuration
-NODE_ENV=production
-```
+### 1.2 GitHub Webhook Setup
 
-**⚠️ Important:** Never commit `.env` to version control!
+To enable automatic deployment:
 
-### 1.2 Create Server Configuration
+1. Go to your GitHub repository settings → Webhooks.
+2. Add a new webhook:
 
-Create `server-config.sh`:
+- **Payload URL:** `http://<your-jenkins-server>/github-webhook/`
+- **Content type:** `application/json`
+- **Secret:** (match Jenkins credential)
+- **Events:** Just the push event (or customize as needed)
 
-```bash
-#!/bin/bash
+3. Ensure Jenkins has the GitHub plugin and credentials configured.
+
+### 1.3 Configuration Files
+
+You may still need to customize `.env` and `server-config.sh` for secrets and environment settings. These files should be present in the repository or managed securely on the server.
+
+**⚠️ Important:** Never commit sensitive secrets to version control!
+
 # Server Configuration
+
 export SERVER_IP="YOUR_SERVER_IP"
 export DEPLOY_USER="deploy"
 export APP_DIR="/opt/apps/edm"
 export GITHUB_REPO="https://github.com/YOUR_USERNAME/YOUR_REPO.git"
 export BACKUP_DIR="/opt/backups/edm"
 export STACK_NAME="edm"
-```
+
+````
 
 **⚠️ Important:** Never commit `server-config.sh` to version control!
 
@@ -100,7 +107,7 @@ Upload these files to `/root/deployment/`:
 cd /root/deployment
 chmod +x deploy-app.sh
 chmod +x backup-db.sh
-```
+````
 
 ### 3.2 Run Deployment Script
 

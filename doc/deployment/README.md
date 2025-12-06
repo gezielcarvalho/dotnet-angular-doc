@@ -9,9 +9,9 @@ This folder contains application-specific deployment guides and configuration fi
 - **APP_DEPLOYMENT.md** - Complete application deployment guide
 - **Jenkinsfile** - CI/CD pipeline configuration
 
-### Scripts (Upload to Server)
+### Scripts
 
-- **deploy-app.sh** - Application deployment script
+- **deploy-app.sh** - Optional manual deployment script (fallback)
 - **backup-db.sh** - Database backup script
 
 ### Configuration Templates
@@ -25,8 +25,6 @@ This folder contains application-specific deployment guides and configuration fi
 
 ## Prerequisites
 
-Before deploying the application:
-
 - ✅ Infrastructure must be set up (see `/doc/infrastructure/D001_INFRASTRUCTURE_SETUP.md`)
 - ✅ Docker Swarm must be active
 - ✅ Jenkins must be running
@@ -34,29 +32,21 @@ Before deploying the application:
 
 ---
 
-## Quick Start
+## CI/CD Quick Start
 
-### 1. Prepare Configuration
+### 1. Configure GitHub Webhook
 
-```bash
-# Copy templates and customize
-cp doc/deployment/.env.template .env
-cp doc/deployment/server-config.template.sh server-config.sh
+Set up a webhook in your GitHub repository to notify Jenkins on push/merge to `main`.
 
-# Edit files with your actual values
-# - .env: Set passwords, environment settings
-# - server-config.sh: Set server IP, repo URL
-```
+### 2. Jenkins Pipeline
 
-### 2. Upload Files via MobaXterm
+Jenkins will automatically:
 
-Upload to server `/root/deployment/`:
+- Checkout the latest code from GitHub
+- Build Docker images
+- Deploy the stack using Docker Swarm
 
-- [ ] `docker-stack.qa.yaml` (from root)
-- [ ] `.env` (your customized version)
-- [ ] `server-config.sh` (your customized version)
-- [ ] `deploy-app.sh`
-- [ ] `backup-db.sh`
+No manual file uploads are required for deployment. Manual scripts are available for fallback or maintenance.
 
 ### 3. Deploy Application
 
