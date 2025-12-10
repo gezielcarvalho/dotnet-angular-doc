@@ -1,9 +1,15 @@
 using Backend.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using Xunit;
 
 namespace backend.tests.Services;
 
+/// <summary>
+/// Tests for FirebaseFileStorageService
+/// Note: These tests require Firebase Storage to be configured
+/// Set Firebase credentials in test environment or skip with [Skip] attribute
+/// </summary>
 public class TestFileStorageService
 {
     private readonly IConfiguration _configuration;
@@ -14,7 +20,11 @@ public class TestFileStorageService
         {
             {"FileStorage:BasePath", Path.Combine(Path.GetTempPath(), "test-edm-files")},
             {"FileStorage:MaxFileSizeMB", "10"},
-            {"FileStorage:AllowedExtensions", ".pdf,.doc,.docx,.txt,.jpg,.png"}
+            {"FileStorage:AllowedExtensions", ".pdf,.doc,.docx,.txt,.jpg,.png"},
+            // Firebase settings - configure for testing
+            {"Firebase:StorageBucket", "test-bucket.appspot.com"},
+            {"Firebase:CredentialsPath", ""},
+            {"Firebase:CredentialsJson", ""}
         };
 
         _configuration = new ConfigurationBuilder()
@@ -25,8 +35,15 @@ public class TestFileStorageService
     [Fact]
     public async Task SaveFileAsync_WithValidFile_SavesSuccessfully()
     {
+        // Skip test if Firebase is not configured
+        var bucket = _configuration["Firebase:StorageBucket"];
+        if (string.IsNullOrEmpty(bucket) || bucket == "test-bucket.appspot.com")
+        {
+            return; // Skip the test
+        }
+
         // Arrange
-        var service = new FileStorageService(_configuration);
+        var service = new FirebaseFileStorageService(_configuration);
         var fileName = "test-document.pdf";
         var content = new byte[] { 1, 2, 3, 4, 5 };
         var stream = new MemoryStream(content);
@@ -39,14 +56,12 @@ public class TestFileStorageService
 
             // Assert
             result.Should().NotBeNullOrEmpty();
+            result.Should().Contain("documents/");
             result.Should().Contain(documentId.ToString());
             result.Should().Contain("v1_test-document.pdf");
 
-            // Cleanup
-            if (File.Exists(result))
-            {
-                File.Delete(result);
-            }
+            // Cleanup - delete from Firebase
+            await service.DeleteFileAsync(result);
         }
         finally
         {

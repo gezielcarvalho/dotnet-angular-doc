@@ -55,6 +55,9 @@ services:
       - FileStorage__BasePath=${FileStorage__BasePath:-FileStorage}
       - FileStorage__MaxFileSizeMB=${FileStorage__MaxFileSizeMB:-100}
       - FileStorage__AllowedExtensions=${FileStorage__AllowedExtensions:-[".pdf",".doc",".docx",".xls",".xlsx",".txt",".jpg",".png",".zip"]}
+      - Firebase__StorageBucket=${Firebase__StorageBucket}
+      - Firebase__CredentialsPath=${Firebase__CredentialsPath}
+      - Firebase__CredentialsJson=${Firebase__CredentialsJson}
       - Frontend__Url=${Frontend__Url:-http://localhost:4200}
     networks:
       - edm-network-swarm

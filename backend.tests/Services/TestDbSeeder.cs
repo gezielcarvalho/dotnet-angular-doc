@@ -1,7 +1,6 @@
 using backend.tests.Fixtures;
 using backend.tests.Helpers;
 using Backend.Data;
-using Backend.Data;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 

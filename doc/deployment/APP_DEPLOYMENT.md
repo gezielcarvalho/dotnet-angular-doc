@@ -12,6 +12,7 @@ Before deploying the application, ensure:
 - ✅ Docker Swarm is active
 - ✅ Jenkins is running
 - ✅ Portainer is accessible
+- ✅ Firebase project and Storage configured (see `FIREBASE_SETUP.md`)
 
 ---
 
@@ -20,8 +21,9 @@ Before deploying the application, ensure:
 ### Services
 
 - **Backend:** .NET 8 Web API (2 replicas)
-- **Frontend:** Angular 17 SPA (2 replicas)
+- **Frontend:** Angular 21 SPA (2 replicas)
 - **Database:** SQL Server 2022 (1 replica)
+- **Storage:** Firebase Storage (cloud-based file storage)
 - **Nginx:** Reverse proxy and load balancer (1 replica)
 
 ### Network

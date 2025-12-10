@@ -2,11 +2,17 @@ using backend.tests.Fixtures;
 using backend.tests.Helpers;
 using Backend.Services;
 using FluentAssertions;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace backend.tests.Services;
 
 public class TestPermissionService
 {
+    private ILogger<PermissionService> CreateMockLogger()
+    {
+        return new Mock<ILogger<PermissionService>>().Object;
+    }
     [Fact]
     public async Task CanAccessFolderAsync_SystemAdmin_ReturnsTrue()
     {
@@ -19,7 +25,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(admin.Id, folder.Id, "Read");
@@ -42,7 +48,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(user.Id, folder.Id, "Read");
@@ -73,7 +79,7 @@ public class TestPermissionService
         context.Permissions.Add(permission);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(otherUser.Id, folder.Id, "Read");
@@ -101,7 +107,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(otherUser.Id, folder.Id, "Read");
@@ -126,7 +132,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(user.Id, folder.Id, "Read");
@@ -151,7 +157,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(editor.Id, folder.Id, "Write");
@@ -176,7 +182,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessFolderAsync(viewer.Id, folder.Id, "Write");
@@ -201,7 +207,7 @@ public class TestPermissionService
         context.Documents.Add(document);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessDocumentAsync(user.Id, document.Id, "Read");
@@ -234,7 +240,7 @@ public class TestPermissionService
         context.Permissions.Add(permission);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessDocumentAsync(otherUser.Id, document.Id, "Read");
@@ -267,7 +273,7 @@ public class TestPermissionService
         context.Permissions.Add(folderPermission);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.CanAccessDocumentAsync(otherUser.Id, document.Id, "Read");
@@ -295,7 +301,7 @@ public class TestPermissionService
         context.Folders.Add(folder);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var request = new Backend.Models.DTO.Permissions.CreatePermissionRequest
@@ -334,7 +340,7 @@ public class TestPermissionService
         context.Permissions.Add(permission);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.RevokePermissionAsync(permission.Id);
@@ -372,7 +378,7 @@ public class TestPermissionService
         context.Permissions.AddRange(permission1, permission2);
         await context.SaveChangesAsync();
 
-        var service = new PermissionService(context);
+        var service = new PermissionService(context, CreateMockLogger());
 
         // Act
         var result = await service.GetUserPermissionsAsync(otherUser.Id);

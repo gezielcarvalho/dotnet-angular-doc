@@ -8,6 +8,7 @@ This folder contains application-specific deployment guides and configuration fi
 
 - **APP_DEPLOYMENT.md** - Complete application deployment guide
 - **Jenkinsfile** - CI/CD pipeline configuration
+- **FIREBASE_SETUP.md** - Firebase Storage configuration guide
 
 ### Scripts
 

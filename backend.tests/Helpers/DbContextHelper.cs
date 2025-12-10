@@ -5,7 +5,7 @@ namespace backend.tests.Helpers;
 
 public static class DbContextHelper
 {
-    public static DocumentDbContext GetInMemoryDbContext(string dbName = null)
+    public static DocumentDbContext GetInMemoryDbContext(string? dbName = null)
     {
         var options = new DbContextOptionsBuilder<DocumentDbContext>()
             .UseInMemoryDatabase(databaseName: dbName ?? Guid.NewGuid().ToString())

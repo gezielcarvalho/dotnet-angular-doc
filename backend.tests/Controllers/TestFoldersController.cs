@@ -6,11 +6,22 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace backend.tests.Controllers;
 
 public class TestFoldersController
 {
+    private ILogger<PermissionService> CreateMockLogger()
+    {
+        return new Mock<ILogger<PermissionService>>().Object;
+    }
+
+    private ILogger<FoldersController> CreateControllerMockLogger()
+    {
+        return new Mock<ILogger<FoldersController>>().Object;
+    }
     [Fact]
     public async Task GetFolders_WithRequiredPermissionWrite_ReturnsWritableOnly()
     {
@@ -26,8 +37,8 @@ public class TestFoldersController
         context.Folders.Add(root);
         await context.SaveChangesAsync();
 
-        var permissionService = new PermissionService(context);
-        var controller = new FoldersController(context, permissionService);
+        var permissionService = new PermissionService(context, CreateMockLogger());
+        var controller = new FoldersController(context, permissionService, CreateControllerMockLogger());
 
         // Set up HttpContext with editor claims
         var editorClaims = new List<Claim>
@@ -54,7 +65,7 @@ public class TestFoldersController
         response.Data.Any(f => f.CanWrite).Should().BeTrue();
 
         // Now viewer should not see root for Write
-        var viewerController = new FoldersController(context, permissionService);
+        var viewerController = new FoldersController(context, permissionService, CreateControllerMockLogger());
         var viewerClaims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, viewer.Id.ToString())
@@ -88,8 +99,8 @@ public class TestFoldersController
         context.Folders.Add(root);
         await context.SaveChangesAsync();
 
-        var permissionService = new PermissionService(context);
-        var controller = new FoldersController(context, permissionService);
+        var permissionService = new PermissionService(context, CreateMockLogger());
+        var controller = new FoldersController(context, permissionService, CreateControllerMockLogger());
 
         // Set up HttpContext with viewer claims
         var viewerClaims = new List<Claim>

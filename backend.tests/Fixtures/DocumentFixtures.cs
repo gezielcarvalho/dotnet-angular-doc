@@ -1,4 +1,4 @@
-using Backend.Models.EDM;
+using Backend.Models.Document;
 using Backend.Models.DTO.Auth;
 
 namespace backend.tests.Fixtures;

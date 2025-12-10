@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
 // Application Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
-builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddSingleton<IFileStorageService, FirebaseFileStorageService>();
 // Email service selection (default: smtp client)
 var smtpProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
 if (string.Equals(smtpProvider, "mimekit", StringComparison.OrdinalIgnoreCase) || string.Equals(smtpProvider, "true", StringComparison.OrdinalIgnoreCase))
