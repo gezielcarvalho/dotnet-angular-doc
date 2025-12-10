@@ -4,6 +4,8 @@ services:
     container_name: edm-sqlserver
     ports:
       - "14333:1433"
+    env_file:
+      - .env.local
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrong@Passw0rd
@@ -36,6 +38,7 @@ services:
       - SMTP__Host=mailhog
       - SMTP__Port=1025
       - SMTP__UseSsl=false
+      - JwtSettings__SecretKey=${JwtSettings__SecretKey}
     volumes:
       - ./backend:/src
       - backend-nuget:/root/.nuget/packages

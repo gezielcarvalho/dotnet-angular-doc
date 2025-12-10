@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System;
+using System.IO;
 using DotNetEnv;
 
 // Load .env.local only in development
@@ -60,7 +61,28 @@ else
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
+var secretKey = jwtSettings["SecretKey"];
+
+// If the secret is not set via environment, try reading it from a mounted Docker secret file
+if (string.IsNullOrEmpty(secretKey))
+{
+    var secretFilePath = Environment.GetEnvironmentVariable("JWT_SECRET_FILE") ?? "/run/secrets/jwt_secret_key";
+    try
+    {
+        if (File.Exists(secretFilePath))
+        {
+            secretKey = File.ReadAllText(secretFilePath).Trim();
+            Console.WriteLine($"Loaded JWT secret from file {secretFilePath} (length={secretKey?.Length ?? 0})");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Failed to read JWT secret file from {secretFilePath}: {ex.Message}");
+    }
+}
+
+if (string.IsNullOrEmpty(secretKey))
+    throw new InvalidOperationException("JWT SecretKey not configured");
 
 builder.Services.AddAuthentication(options =>
 {

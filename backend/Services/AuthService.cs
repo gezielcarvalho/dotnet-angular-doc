@@ -283,6 +283,9 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Role, user.Role),
             new Claim("FirstName", user.FirstName),
             new Claim("LastName", user.LastName),
+            // Ensure the audience claim is present even if the JwtSecurityToken constructor
+            // doesn't include it by environment or other differences in token handlers.
+            new Claim(JwtRegisteredClaimNames.Aud, audience),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

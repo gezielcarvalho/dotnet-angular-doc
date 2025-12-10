@@ -1,12 +1,16 @@
 pipeline {
     agent any
     
+    environment {
         // Trigger on push/merge to main branch
         githubPush()
         STACK_NAME = 'edm'
         COMPOSE_FILE = 'docker-stack.qa.yaml'
         SA_PASSWORD = credentials('sql-server-password')  // Configure in Jenkins credentials
         GITHUB_WEBHOOK_SECRET = credentials('github-webhook-secret')  // Configure in Jenkins credentials
+        FIREBASE_STORAGE_BUCKET = credentials('firebase-storage-bucket')  // Configure in Jenkins credentials
+        FIREBASE_CREDENTIALS_JSON = credentials('firebase-credentials-json')  // Configure in Jenkins credentials
+        JWT_SECRET_KEY = credentials('jwt-secret-key')  // Configure in Jenkins credentials - use: 07zT1WMvKcpDofwAExD0WuMahzoL5usvQR5Fhn+fZ0GxgxKUv6sdvhy9/h9kvpO/asel3qV/HqTQT6BWmOqblw==
     }
     
     options {
@@ -207,6 +211,11 @@ pipeline {
                 echo 'Deploying stack to Docker Swarm...'
                 script {
                     sh '''
+                        # Export environment variables for docker stack deploy
+                        export Firebase__StorageBucket="${FIREBASE_STORAGE_BUCKET}"
+                        export Firebase__CredentialsJson="${FIREBASE_CREDENTIALS_JSON}"
+                        export JwtSettings__SecretKey="${JWT_SECRET_KEY}"
+                        
                         # Deploy stack
                         docker stack deploy -c ${COMPOSE_FILE} ${STACK_NAME} --with-registry-auth
                         
