@@ -44,7 +44,18 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection:-Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;}
+      - ConnectionStrings__DockerConnection=${ConnectionStrings__DockerConnection:-Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;}
+      - JwtSettings__SecretKey=${JwtSettings__SecretKey}
+      - JwtSettings__Issuer=${JwtSettings__Issuer:-EdmSystem}
+      - JwtSettings__Audience=${JwtSettings__Audience:-EdmClient}
+      - JwtSettings__ExpirationMinutes=${JwtSettings__ExpirationMinutes:-60}
+      - JwtSettings__RefreshTokenExpirationDays=${JwtSettings__RefreshTokenExpirationDays:-7}
+      - Smtp__Provider=${Smtp__Provider:-smtp}
+      - FileStorage__BasePath=${FileStorage__BasePath:-FileStorage}
+      - FileStorage__MaxFileSizeMB=${FileStorage__MaxFileSizeMB:-100}
+      - FileStorage__AllowedExtensions=${FileStorage__AllowedExtensions:-[".pdf",".doc",".docx",".xls",".xlsx",".txt",".jpg",".png",".zip"]}
+      - Frontend__Url=${Frontend__Url:-http://localhost:4200}
     networks:
       - edm-network-swarm
     deploy:

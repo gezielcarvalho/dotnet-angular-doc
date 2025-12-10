@@ -6,6 +6,14 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System;
+using DotNetEnv;
+
+// Load .env.local only in development
+if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+{
+    Env.Load(".env.local");
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
