@@ -25,8 +25,8 @@ public class TestAdminController
         var controller = new AdminController(context, NullLogger<AdminController>.Instance);
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, admin.Id.ToString()),
-            new Claim(ClaimTypes.Role, "Admin")
+            new(ClaimTypes.NameIdentifier, admin.Id.ToString()),
+            new(ClaimTypes.Role, "Admin")
         };
         controller.ControllerContext = new ControllerContext
         {
@@ -64,8 +64,8 @@ public class TestAdminController
         var controller = new AdminController(context, NullLogger<AdminController>.Instance);
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, "User")
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Role, "User")
         };
         controller.ControllerContext = new ControllerContext
         {
@@ -76,8 +76,7 @@ public class TestAdminController
         var result = await controller.RunPersonalFolderMigration();
 
         // Assert
-        var forbidResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
-        forbidResult.StatusCode.Should().Be(403);
+        result.Result.Should().BeOfType<ForbidResult>();
 
         DbContextHelper.CleanupDbContext(context);
     }

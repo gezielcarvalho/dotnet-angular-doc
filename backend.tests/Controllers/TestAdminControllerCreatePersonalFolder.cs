@@ -76,8 +76,7 @@ public class TestAdminControllerCreatePersonalFolder
         var result = await controller.CreatePersonalFolderForUser(user.Id);
 
         // Assert
-        var forbidResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
-        forbidResult.StatusCode.Should().Be(403);
+        result.Result.Should().BeOfType<ForbidResult>();
 
         DbContextHelper.CleanupDbContext(context);
     }

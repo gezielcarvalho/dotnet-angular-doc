@@ -7,9 +7,6 @@ public static class DbSeeder
 {
     public static async Task SeedAsync(DocumentDbContext context)
     {
-        // Check if we already have data
-        if (await context.Users.AnyAsync())
-            return;
         // If no users exist, seed initial data
         if (!await context.Users.AnyAsync())
             {
