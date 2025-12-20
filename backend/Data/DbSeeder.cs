@@ -52,8 +52,7 @@ public static class DbSeeder
                 // Create some default folders
                 var folders = new List<Folder>
                 {
-                    new Folder
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "General",
                         Description = "General documents",
@@ -66,8 +65,7 @@ public static class DbSeeder
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = "System"
                     },
-                    new Folder
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "Projects",
                         Description = "Project documents",
@@ -80,8 +78,7 @@ public static class DbSeeder
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = "System"
                     },
-                    new Folder
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "Archive",
                         Description = "Archived documents",
@@ -118,8 +115,7 @@ public static class DbSeeder
                 // Create some default tags
                 var tags = new List<Tag>
                 {
-                    new Tag
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "Important",
                         Description = "Important documents",
@@ -128,8 +124,7 @@ public static class DbSeeder
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = "System"
                     },
-                    new Tag
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "Draft",
                         Description = "Draft documents",
@@ -138,8 +133,7 @@ public static class DbSeeder
                         CreatedAt = DateTime.UtcNow,
                         CreatedBy = "System"
                     },
-                    new Tag
-                    {
+                    new() {
                         Id = Guid.NewGuid(),
                         Name = "Final",
                         Description = "Final documents",

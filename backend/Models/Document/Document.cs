@@ -23,10 +23,10 @@ namespace Backend.Models.Document
         // Navigation properties
         public User Owner { get; set; } = null!;
         public Folder Folder { get; set; } = null!;
-        public ICollection<DocumentVersion> Versions { get; set; } = new List<DocumentVersion>();
-        public ICollection<DocumentTag> DocumentTags { get; set; } = new List<DocumentTag>();
-        public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
-        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
-        public ICollection<Workflow> Workflows { get; set; } = new List<Workflow>();
+        public ICollection<DocumentVersion> Versions { get; set; } = [];
+        public ICollection<DocumentTag> DocumentTags { get; set; } = [];
+        public ICollection<Permission> Permissions { get; set; } = [];
+        public ICollection<Comment> Comments { get; set; } = [];
+        public ICollection<Workflow> Workflows { get; set; } = [];
     }
 }

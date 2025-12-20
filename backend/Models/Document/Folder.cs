@@ -13,8 +13,8 @@ namespace Backend.Models.Document
         // Navigation properties
         public User Owner { get; set; } = null!;
         public Folder? ParentFolder { get; set; }
-        public ICollection<Folder> SubFolders { get; set; } = new List<Folder>();
-        public ICollection<Document> Documents { get; set; } = new List<Document>();
-        public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+        public ICollection<Folder> SubFolders { get; set; } = [];
+        public ICollection<Document> Documents { get; set; } = [];
+        public ICollection<Permission> Permissions { get; set; } = [];
     }
 }

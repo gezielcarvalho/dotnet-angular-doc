@@ -7,6 +7,6 @@ namespace Backend.Models.Document
         public string Color { get; set; } = "#0066CC";
         
         // Navigation properties
-        public ICollection<DocumentTag> DocumentTags { get; set; } = new List<DocumentTag>();
+        public ICollection<DocumentTag> DocumentTags { get; set; } = [];
     }
 }

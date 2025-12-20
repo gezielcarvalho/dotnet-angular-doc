@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Backend.Data;
 using Backend.Models.DTO.Common;
-using Backend.Services;
+using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,24 +9,18 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AdminController : ControllerBase
+public class AdminController(DocumentDbContext context, ILogger<AdminController> logger) : ControllerBase
 {
-    private readonly DocumentDbContext _context;
-    private readonly ILogger<AdminController> _logger;
+    private readonly DocumentDbContext _context = context;
+    private readonly ILogger<AdminController> _logger = logger;
 
-    public AdminController(DocumentDbContext context, ILogger<AdminController> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
-    [Authorize(Roles = "Admin,SystemAdmin")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.SystemAdmin)]
     [HttpPost("run-personal-folder-migration")]
     public async Task<ActionResult<ApiResponse<int>>> RunPersonalFolderMigration()
     {
         // Double-check role for direct invocation and to return Forbid without relying on middleware
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (role != "Admin" && role != "SystemAdmin")
+        if (role != RoleNames.Admin && role != RoleNames.SystemAdmin)
             return Forbid();
         try
         {
@@ -41,12 +35,12 @@ public class AdminController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Admin,SystemAdmin")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.SystemAdmin)]
     [HttpPost("create-personal-folder/{userId}")]
     public async Task<ActionResult<ApiResponse<bool>>> CreatePersonalFolderForUser(Guid userId)
     {
         var role = User.FindFirst(ClaimTypes.Role)?.Value;
-        if (role != "Admin" && role != "SystemAdmin") return Forbid();
+        if (role != RoleNames.Admin && role != RoleNames.SystemAdmin) return Forbid();
         try
         {
             var created = await DbSeeder.EnsurePersonalFolderForUser(_context, userId);

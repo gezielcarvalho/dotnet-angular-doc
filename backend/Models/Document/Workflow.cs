@@ -14,6 +14,6 @@ namespace Backend.Models.Document
         
         // Navigation properties
         public Document Document { get; set; } = null!;
-        public ICollection<WorkflowStep> Steps { get; set; } = new List<WorkflowStep>();
+        public ICollection<WorkflowStep> Steps { get; set; } = [];
     }
 }

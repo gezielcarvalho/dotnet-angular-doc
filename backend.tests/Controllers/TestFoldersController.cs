@@ -13,12 +13,12 @@ namespace backend.tests.Controllers;
 
 public class TestFoldersController
 {
-    private ILogger<PermissionService> CreateMockLogger()
+    private static ILogger<PermissionService> CreateMockLogger()
     {
         return new Mock<ILogger<PermissionService>>().Object;
     }
 
-    private ILogger<FoldersController> CreateControllerMockLogger()
+    private static ILogger<FoldersController> CreateControllerMockLogger()
     {
         return new Mock<ILogger<FoldersController>>().Object;
     }
@@ -43,7 +43,7 @@ public class TestFoldersController
         // Set up HttpContext with editor claims
         var editorClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, editor.Id.ToString())
+            new(ClaimTypes.NameIdentifier, editor.Id.ToString())
         };
         var editorIdentity = new ClaimsIdentity(editorClaims, "TestAuth");
         var editorPrincipal = new ClaimsPrincipal(editorIdentity);
@@ -62,13 +62,13 @@ public class TestFoldersController
         response.Should().NotBeNull();
         response!.Data.Should().HaveCountGreaterThan(0);
         // We expect at least one folder and that the editor has write permission on at least one
-        response.Data.Any(f => f.CanWrite).Should().BeTrue();
+        response.Data!.Any(f => f.CanWrite).Should().BeTrue();
 
         // Now viewer should not see root for Write
         var viewerController = new FoldersController(context, permissionService, CreateControllerMockLogger());
         var viewerClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, viewer.Id.ToString())
+            new(ClaimTypes.NameIdentifier, viewer.Id.ToString())
         };
         var viewerIdentity = new ClaimsIdentity(viewerClaims, "TestAuth");
         var viewerPrincipal = new ClaimsPrincipal(viewerIdentity);
@@ -105,7 +105,7 @@ public class TestFoldersController
         // Set up HttpContext with viewer claims
         var viewerClaims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, viewer.Id.ToString())
+            new(ClaimTypes.NameIdentifier, viewer.Id.ToString())
         };
         var viewerIdentity = new ClaimsIdentity(viewerClaims, "TestAuth");
         var viewerPrincipal = new ClaimsPrincipal(viewerIdentity);
@@ -120,7 +120,7 @@ public class TestFoldersController
         response.Should().NotBeNull();
         response!.Data.Should().HaveCountGreaterThan(0);
         // viewer should be able to read but not write
-        response.Data.All(f => f.CanWrite == false).Should().BeTrue();
+        response.Data!.All(f => f.CanWrite == false).Should().BeTrue();
 
         DbContextHelper.CleanupDbContext(context);
     }

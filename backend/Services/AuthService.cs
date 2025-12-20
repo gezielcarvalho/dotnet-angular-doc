@@ -10,20 +10,12 @@ using System.Text;
 
 namespace Backend.Services;
 
-public class AuthService : IAuthService
+public class AuthService(DocumentDbContext context, IConfiguration configuration, IEmailService emailService, ILogger<AuthService> logger) : IAuthService
 {
-    private readonly DocumentDbContext _context;
-    private readonly IConfiguration _configuration;
-    private readonly Backend.Services.Interfaces.IEmailService _emailService;
-    private readonly ILogger<AuthService> _logger;
-
-    public AuthService(DocumentDbContext context, IConfiguration configuration, Backend.Services.Interfaces.IEmailService emailService, ILogger<AuthService> logger)
-    {
-        _context = context;
-        _configuration = configuration;
-        _emailService = emailService;
-        _logger = logger;
-    }
+    private readonly DocumentDbContext _context = context;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IEmailService _emailService = emailService;
+    private readonly ILogger<AuthService> _logger = logger;
 
     // Convenience constructor used in tests where we don't need email service or logger
     public AuthService(DocumentDbContext context, IConfiguration configuration) : this(context, configuration, new NullEmailService(), Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthService>.Instance)

@@ -3,8 +3,6 @@ using Backend.Models.DTO.Permissions;
 using Backend.Models.Document;
 using Backend.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Linq;
 
 namespace Backend.Services;
 

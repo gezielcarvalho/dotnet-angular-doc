@@ -4,12 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Data
 {
-    public class DocumentDbContext : DbContext
+    public class DocumentDbContext(DbContextOptions<DocumentDbContext> options) : DbContext(options)
     {
-        public DocumentDbContext(DbContextOptions<DocumentDbContext> options) : base(options)
-        {
-        }
-        
+
         // DbSets
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Folder> Folders { get; set; } = null!;
@@ -28,40 +25,40 @@ namespace Backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            
+
             // User configuration
             ConfigureUser(modelBuilder);
-            
+
             // Folder configuration
             ConfigureFolder(modelBuilder);
-            
+
             // Document configuration
             ConfigureDocument(modelBuilder);
-            
+
             // DocumentVersion configuration
             ConfigureDocumentVersion(modelBuilder);
-            
+
             // Tag configuration
             ConfigureTag(modelBuilder);
-            
+
             // DocumentTag configuration
             ConfigureDocumentTag(modelBuilder);
-            
+
             // Permission configuration
             ConfigurePermission(modelBuilder);
-            
+
             // Comment configuration
             ConfigureComment(modelBuilder);
-            
+
             // Workflow configuration
             ConfigureWorkflow(modelBuilder);
-            
+
             // WorkflowStep configuration
             ConfigureWorkflowStep(modelBuilder);
-            
+
             // AuditLog configuration
             ConfigureAuditLog(modelBuilder);
-            
+
             // Notification configuration
             ConfigureNotification(modelBuilder);
             
@@ -71,7 +68,7 @@ namespace Backend.Data
             modelBuilder.Entity<Document>().HasQueryFilter(d => !d.IsDeleted);
             modelBuilder.Entity<Tag>().HasQueryFilter(t => !t.IsDeleted);
             modelBuilder.Entity<Comment>().HasQueryFilter(c => !c.IsDeleted);
-            
+
             // Seed data
             SeedData(modelBuilder);
 
@@ -88,7 +85,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureUser(ModelBuilder modelBuilder)
+        private static void ConfigureUser(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>(entity =>
             {
@@ -107,7 +104,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureFolder(ModelBuilder modelBuilder)
+        private static void ConfigureFolder(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Folder>(entity =>
             {
@@ -132,7 +129,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureDocument(ModelBuilder modelBuilder)
+        private static void ConfigureDocument(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Document>(entity =>
             {
@@ -162,7 +159,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureDocumentVersion(ModelBuilder modelBuilder)
+        private static void ConfigureDocumentVersion(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DocumentVersion>(entity =>
             {
@@ -181,7 +178,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureTag(ModelBuilder modelBuilder)
+        private static void ConfigureTag(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Tag>(entity =>
             {
@@ -194,7 +191,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureDocumentTag(ModelBuilder modelBuilder)
+        private static void ConfigureDocumentTag(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DocumentTag>(entity =>
             {
@@ -212,7 +209,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigurePermission(ModelBuilder modelBuilder)
+        private static void ConfigurePermission(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Permission>(entity =>
             {
@@ -242,7 +239,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureComment(ModelBuilder modelBuilder)
+        private static void ConfigureComment(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Comment>(entity =>
             {
@@ -269,7 +266,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureWorkflow(ModelBuilder modelBuilder)
+        private static void ConfigureWorkflow(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Workflow>(entity =>
             {
@@ -290,7 +287,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureWorkflowStep(ModelBuilder modelBuilder)
+        private static void ConfigureWorkflowStep(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<WorkflowStep>(entity =>
             {
@@ -315,7 +312,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureAuditLog(ModelBuilder modelBuilder)
+        private static void ConfigureAuditLog(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<AuditLog>(entity =>
             {
@@ -333,7 +330,7 @@ namespace Backend.Data
             });
         }
         
-        private void ConfigureNotification(ModelBuilder modelBuilder)
+        private static void ConfigureNotification(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Notification>(entity =>
             {
@@ -349,7 +346,7 @@ namespace Backend.Data
             });
         }
         
-        private void SeedData(ModelBuilder modelBuilder)
+        private static void SeedData(ModelBuilder modelBuilder)
         {
             // Create admin user
             var adminId = Guid.NewGuid();

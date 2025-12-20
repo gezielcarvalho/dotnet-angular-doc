@@ -1,10 +1,7 @@
 using Backend.Services.Interfaces;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using MimeKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using System.Threading.Tasks;
 using System.Text;
 using MimeKit.Text;
 using System.Net;
@@ -69,7 +66,7 @@ public class MimeKitEmailService : IEmailService
         }
     }
 
-    private string StripHtmlAndRenderPlainText(string html)
+    private static string StripHtmlAndRenderPlainText(string html)
     {
         if (string.IsNullOrEmpty(html)) return string.Empty;
         try

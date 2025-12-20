@@ -13,11 +13,11 @@ namespace Backend.Models.Document
         public DateTime? LastLoginAt { get; set; }
         
         // Navigation properties
-        public ICollection<Folder> OwnedFolders { get; set; } = new List<Folder>();
-        public ICollection<Document> OwnedDocuments { get; set; } = new List<Document>();
-        public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
-        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
-        public ICollection<Workflow> InitiatedWorkflows { get; set; } = new List<Workflow>();
-        public ICollection<WorkflowStep> AssignedWorkflowSteps { get; set; } = new List<WorkflowStep>();
+        public ICollection<Folder> OwnedFolders { get; set; } = [];
+        public ICollection<Document> OwnedDocuments { get; set; } = [];
+        public ICollection<Permission> Permissions { get; set; } = [];
+        public ICollection<Comment> Comments { get; set; } = [];
+        public ICollection<Workflow> InitiatedWorkflows { get; set; } = [];
+        public ICollection<WorkflowStep> AssignedWorkflowSteps { get; set; } = [];
     }
 }
