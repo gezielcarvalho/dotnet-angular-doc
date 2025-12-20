@@ -8,15 +8,35 @@ echo "Running tests with coverage..."
 dotnet test backend.tests --nologo --collect:"XPlat Code Coverage"
 
 # Pick the newest coverage file to avoid returning an older run's file
-COV_FILE=$(find backend.tests/TestResults -type f -name coverage.cobertura.xml -print0 2>/dev/null | xargs -0 ls -1t 2>/dev/null | head -n1 || true)
+RESULTS_DIR=backend.tests/TestResults/run_$(date +%s)
+mkdir -p "${RESULTS_DIR}"
+echo "Running tests with coverage into ${RESULTS_DIR}..."
+dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "${RESULTS_DIR}"
+
+# Pick the newest coverage file inside the run directory
+COV_FILE=$(find "${RESULTS_DIR}" -type f -name coverage.cobertura.xml -print0 2>/dev/null | xargs -0 ls -1t 2>/dev/null | head -n1 || true)
 if [[ -z "${COV_FILE}" ]]; then
-  echo "coverage.cobertura.xml not found under backend.tests/TestResults" >&2
+  echo "coverage.cobertura.xml not found under ${RESULTS_DIR}" >&2
   exit 2
 fi
 
 LINE_RATE=$(grep -oP 'line-rate="\K[0-9.]+' "${COV_FILE}" | head -n1 || true)
 LINES_COVERED=$(grep -oP 'lines-covered="\K[0-9]+' "${COV_FILE}" | head -n1 || true)
 LINES_VALID=$(grep -oP 'lines-valid="\K[0-9]+' "${COV_FILE}" | head -n1 || true)
+
+# If file looks empty, retry once after a short sleep
+if [[ "${LINES_VALID}" == "0" || -z "${LINES_VALID}" ]]; then
+  sleep 1
+  COV_FILE=$(find "${RESULTS_DIR}" -type f -name coverage.cobertura.xml -print0 2>/dev/null | xargs -0 ls -1t 2>/dev/null | head -n1 || true)
+  LINE_RATE=$(grep -oP 'line-rate="\K[0-9.]+' "${COV_FILE}" | head -n1 || true)
+  LINES_COVERED=$(grep -oP 'lines-covered="\K[0-9]+' "${COV_FILE}" | head -n1 || true)
+  LINES_VALID=$(grep -oP 'lines-valid="\K[0-9]+' "${COV_FILE}" | head -n1 || true)
+fi
+
+if [[ -z "${LINES_VALID}" || "${LINES_VALID}" == "0" ]]; then
+  echo "Coverage file ${COV_FILE} has zero valid lines (lines-valid=${LINES_VALID})" >&2
+  exit 3
+fi
 
 if [[ -z "${LINE_RATE}" ]]; then
   echo "Failed to parse line-rate from coverage XML" >&2

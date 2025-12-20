@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace backend.tests.Controllers;
 
-public class TestFoldersController
+public class FoldersControllerTests
 {
     private static ILogger<PermissionService> CreateMockLogger()
     {

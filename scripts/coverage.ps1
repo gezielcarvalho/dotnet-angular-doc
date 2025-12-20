@@ -23,17 +23,30 @@ param(
 
 Set-StrictMode -Version Latest
 
-Write-Host "Running tests with coverage..."
-& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage"
+# Use a timestamped results directory to avoid stale files
+$timestamp = [int][double]::Parse((Get-Date -UFormat %s))
+$resultsDir = Join-Path -Path "backend.tests/TestResults" -ChildPath "run_$timestamp"
+New-Item -ItemType Directory -Path $resultsDir | Out-Null
+
+Write-Host "Running tests with coverage into $resultsDir ..."
+& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "$resultsDir"
 if($LASTEXITCODE -ne 0){
-    Write-Error "dotnet test failed with exit code $LASTEXITCODE"
-    exit $LASTEXITCODE
+  Write-Error "dotnet test failed with exit code $LASTEXITCODE"
+  exit $LASTEXITCODE
 }
 
-# Find the most recent cobertura XML
-$cov = Get-ChildItem -Path "backend.tests/TestResults" -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue |
-  Sort-Object LastWriteTime -Descending |
-  Select-Object -First 1
+# Find the most recent cobertura XML in the results dir (with a small retry if empty)
+function Get-CoverageFile($dir){
+  Get-ChildItem -Path $dir -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+}
+
+$cov = Get-CoverageFile $resultsDir
+if(-not $cov){
+  Write-Error "coverage.cobertura.xml not found under $resultsDir"
+  exit 2
+}
 if(-not $cov){
     Write-Error "coverage.cobertura.xml not found under backend.tests/TestResults"
     exit 2
@@ -41,23 +54,44 @@ if(-not $cov){
 
 [xml]$xml = Get-Content $cov.FullName
 $root = $xml.DocumentElement
-$lineRateAttr = $root.GetAttribute('line-rate')
-if(-not $lineRateAttr){
-    Write-Error "line-rate attribute not found in coverage XML"
-    exit 3
+
+$linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
+$linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
+
+if($linesValid -eq 0){
+  # try a short retry in case collector wrote placeholder
+  Start-Sleep -Seconds 1
+  $cov = Get-CoverageFile $resultsDir
+  if(-not $cov){
+    Write-Error "coverage.cobertura.xml disappeared under $resultsDir"
+    exit 2
+  }
+  [xml]$xml = Get-Content $cov.FullName
+  $root = $xml.DocumentElement
+  $linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
+  $linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
 }
 
-[double]$lineRate = [double]$lineRateAttr
-$linesCovered = $root.GetAttribute('lines-covered')
-$linesValid = $root.GetAttribute('lines-valid')
+Write-Output "Coverage file: $($cov.FullName)"
+if($linesValid -eq 0){
+  Write-Error "Coverage file has zero valid lines (lines-valid=0); failing"
+  exit 4
+}
+
+# Compute percentage robustly
+$lineRateAttr = $root.GetAttribute('line-rate')
+[double]$lineRate = 0
+if($lineRateAttr){
+  [double]::TryParse($lineRateAttr, [ref]$lineRate) | Out-Null
+}
 $percent = [math]::Round($lineRate * 100, 2)
 
 Write-Output "Coverage summary:"
 Write-Output "  Line coverage : $percent% ($linesCovered / $linesValid)"
 
 if($FailUnder -gt 0 -and $percent -lt $FailUnder){
-    Write-Host "Coverage $percent% is below threshold $FailUnder% - failing" -ForegroundColor Red
-    exit 1
+  Write-Host "Coverage $percent% is below threshold $FailUnder% - failing" -ForegroundColor Red
+  exit 1
 }
 
 exit 0
