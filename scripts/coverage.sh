@@ -7,7 +7,8 @@ FAIL_UNDER=${1:-0}
 echo "Running tests with coverage..."
 dotnet test backend.tests --nologo --collect:"XPlat Code Coverage"
 
-COV_FILE=$(find backend.tests/TestResults -type f -name coverage.cobertura.xml -print -quit || true)
+# Pick the newest coverage file to avoid returning an older run's file
+COV_FILE=$(find backend.tests/TestResults -type f -name coverage.cobertura.xml -print0 2>/dev/null | xargs -0 ls -1t 2>/dev/null | head -n1 || true)
 if [[ -z "${COV_FILE}" ]]; then
   echo "coverage.cobertura.xml not found under backend.tests/TestResults" >&2
   exit 2

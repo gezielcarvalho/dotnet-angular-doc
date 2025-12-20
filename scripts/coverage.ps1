@@ -30,8 +30,10 @@ if($LASTEXITCODE -ne 0){
     exit $LASTEXITCODE
 }
 
-# Find the cobertura XML
-$cov = Get-ChildItem -Path "backend.tests/TestResults" -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+# Find the most recent cobertura XML
+$cov = Get-ChildItem -Path "backend.tests/TestResults" -Filter "coverage.cobertura.xml" -Recurse -ErrorAction SilentlyContinue |
+  Sort-Object LastWriteTime -Descending |
+  Select-Object -First 1
 if(-not $cov){
     Write-Error "coverage.cobertura.xml not found under backend.tests/TestResults"
     exit 2
