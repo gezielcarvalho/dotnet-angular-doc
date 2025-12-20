@@ -52,11 +52,21 @@ if(-not $cov){
     exit 2
 }
 
+
 [xml]$xml = Get-Content $cov.FullName
 $root = $xml.DocumentElement
 
-$linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
-$linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
+# Safely parse integer attributes (avoid PowerShell '??' which isn't supported everywhere)
+$linesValid = 0
+$linesCovered = 0
+$attr = $root.GetAttribute('lines-valid')
+if(-not [string]::IsNullOrEmpty($attr)){
+  [int]::TryParse($attr, [ref]$linesValid) | Out-Null
+}
+$attr = $root.GetAttribute('lines-covered')
+if(-not [string]::IsNullOrEmpty($attr)){
+  [int]::TryParse($attr, [ref]$linesCovered) | Out-Null
+}
 
 if($linesValid -eq 0){
   # try a short retry in case collector wrote placeholder
@@ -68,8 +78,16 @@ if($linesValid -eq 0){
   }
   [xml]$xml = Get-Content $cov.FullName
   $root = $xml.DocumentElement
-  $linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
-  $linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
+  $linesValid = 0
+  $linesCovered = 0
+  $attr = $root.GetAttribute('lines-valid')
+  if(-not [string]::IsNullOrEmpty($attr)){
+    [int]::TryParse($attr, [ref]$linesValid) | Out-Null
+  }
+  $attr = $root.GetAttribute('lines-covered')
+  if(-not [string]::IsNullOrEmpty($attr)){
+    [int]::TryParse($attr, [ref]$linesCovered) | Out-Null
+  }
 }
 
 Write-Output "Coverage file: $($cov.FullName)"
