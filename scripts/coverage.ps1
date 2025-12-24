@@ -28,13 +28,15 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDir
 Set-Location $projectRoot
 
-# Use a timestamped results directory to avoid stale files
-$timestamp = [int][double]::Parse((Get-Date -UFormat %s))
-$resultsDir = Join-Path -Path "backend.tests/TestResults" -ChildPath "run_$timestamp"
+# Use a fixed results directory to avoid stale files
+$resultsDir = Join-Path -Path "backend.tests/TestResults" -ChildPath "coverage_run"
+if (Test-Path $resultsDir) {
+    Remove-Item -Recurse -Force $resultsDir
+}
 New-Item -ItemType Directory -Path $resultsDir | Out-Null
 
 Write-Host "Running tests with coverage into $resultsDir ..."
-& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "$resultsDir"
+& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "$resultsDir" --settings "backend.tests/coverlet.runsettings"
 if($LASTEXITCODE -ne 0){
   Write-Error "dotnet test failed with exit code $LASTEXITCODE"
   exit $LASTEXITCODE
