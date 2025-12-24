@@ -56,7 +56,8 @@ builder.Services.AddHealthChecks()
     .AddDbContextCheck<DocumentDbContext>("database");
 // Email service selection (default: smtp client)
 var smtpProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
-if (string.Equals(smtpProvider, "mimekit", StringComparison.OrdinalIgnoreCase) || string.Equals(smtpProvider, "true", StringComparison.OrdinalIgnoreCase))
+var emailServiceType = Backend.ConfigurationUtils.GetEmailServiceType(smtpProvider);
+if (emailServiceType == typeof(Backend.Services.MimeKitEmailService))
 {
     builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.MimeKitEmailService>();
 }
@@ -186,3 +187,4 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+

@@ -5,6 +5,8 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <ExcludeByFile>**/Migrations/**</ExcludeByFile>
+          <!-- Program.cs: 0% (126 lines) - This is startup code that cannot be easily unit tested -->
+          <Exclude>[Backend]Program</Exclude>
         </Configuration>
       </DataCollector>
     </DataCollectors>
