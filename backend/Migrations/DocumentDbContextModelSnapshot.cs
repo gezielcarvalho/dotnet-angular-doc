@@ -5,6 +5,7 @@
 // 3. Current tests use in-memory databases which bypass migration snapshots
 // 4. Testing auto-generated migration code does not provide business value
 // 5. The file changes with every migration, making tests brittle
+// NOTE: The entire Migrations folder is excluded from coverage via coverlet.runsettings
 using System;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
