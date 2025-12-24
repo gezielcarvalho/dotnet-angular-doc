@@ -58,8 +58,8 @@ public class FirebaseFileStorageService : IFileStorageService
 
     public async Task<string> SaveFileAsync(Stream fileStream, string fileName, Guid documentId, int version)
     {
-        var extension = GetFileExtension(fileName);
-        if (!IsAllowedExtension(extension))
+        var extension = FileStorageUtils.GetFileExtension(fileName);
+        if (!FileStorageUtils.IsAllowedExtension(extension, _allowedExtensions))
             throw new InvalidOperationException($"File extension {extension} is not allowed");
 
         // Create object name: documents/{documentId}/v{version}_{fileName}
@@ -145,17 +145,16 @@ public class FirebaseFileStorageService : IFileStorageService
 
     public string GetFileExtension(string fileName)
     {
-        return Path.GetExtension(fileName).ToLowerInvariant();
+        return FileStorageUtils.GetFileExtension(fileName);
     }
 
     public bool IsAllowedExtension(string extension)
     {
-        return _allowedExtensions.Contains(extension.ToLowerInvariant());
+        return FileStorageUtils.IsAllowedExtension(extension, _allowedExtensions);
     }
 
     public bool IsFileSizeValid(long fileSizeBytes)
     {
-        var maxBytes = _maxFileSizeMB * 1024 * 1024;
-        return fileSizeBytes <= maxBytes;
+        return FileStorageUtils.IsFileSizeValid(fileSizeBytes, _maxFileSizeMB);
     }
 }
