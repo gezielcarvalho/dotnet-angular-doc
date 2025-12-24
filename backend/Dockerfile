@@ -9,6 +9,8 @@ RUN dotnet publish -c Release -o /app/out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
+RUN dotnet tool install --global dotnet-ef --version 8.0.11
+ENV PATH="$PATH:/root/.dotnet/tools"
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost/health || exit 1

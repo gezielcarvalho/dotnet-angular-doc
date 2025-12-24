@@ -130,13 +130,8 @@ var app = builder.Build();
 var activeEmailProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
 app.Logger.LogInformation("Active email provider: {Provider}", activeEmailProvider);
 
-// Apply migrations and seed data automatically on startup
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
-    db.Database.Migrate();
-    await DbSeeder.SeedAsync(db);
-}
+// Note: Database migrations are now run as a separate job post-deployment
+// Seeding is handled separately if needed
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -125,14 +125,19 @@ pipeline {
       steps {
         script {
           retry(5) { sleep 10; sh 'curl -f http://localhost/api/health || exit 1' }
-          // run migrations once after deploy (best-effort)
+          // run migrations as a separate one-off service (best-effort)
           sh '''
-            BACKEND_CONTAINER=$(docker ps -q -f name=${STACK_NAME}_backend | head -n 1)
-            if [ ! -z "$BACKEND_CONTAINER" ]; then
-              docker exec $BACKEND_CONTAINER dotnet ef database update || echo "migrations failed or already applied"
-            else
-              echo "backend container not found"
-            fi
+            MIGRATE_SERVICE=${STACK_NAME}_migrate
+            CONNECTION_STRING="Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+            docker service create --name $MIGRATE_SERVICE \
+              --env ConnectionStrings__DockerConnection="$CONNECTION_STRING" \
+              --network ${STACK_NAME}_edm-network-swarm \
+              --restart-condition none \
+              ${DOCKER_REGISTRY}/edm-backend:${GIT_COMMIT_SHORT} \
+              dotnet ef database update || echo "Migration service creation failed"
+            # Wait for migration to complete
+            sleep 30
+            docker service rm $MIGRATE_SERVICE || echo "Migration service removal failed"
           '''
         }
       }
