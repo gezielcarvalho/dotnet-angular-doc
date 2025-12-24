@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using DotNetEnv;
 
 // Load .env.local only in development
@@ -48,6 +50,10 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddSingleton<IFileStorageService, FirebaseFileStorageService>();
+
+// Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<DocumentDbContext>("database");
 // Email service selection (default: smtp client)
 var smtpProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
 if (string.Equals(smtpProvider, "mimekit", StringComparison.OrdinalIgnoreCase) || string.Equals(smtpProvider, "true", StringComparison.OrdinalIgnoreCase))
@@ -148,5 +154,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHealthChecks("/health");
 
 app.Run();
