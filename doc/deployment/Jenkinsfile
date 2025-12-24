@@ -130,8 +130,7 @@ pipeline {
             MIGRATE_SERVICE=${STACK_NAME}_migrate
             CONNECTION_STRING="Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
             docker service create --name $MIGRATE_SERVICE \
-              --env ConnectionStrings__DockerConnection="$CONNECTION_STRING" \
-              --network ${STACK_NAME}_edm-network-swarm \
+              --env ConnectionStrings__DockerConnection="$CONNECTION_STRING" \              --secret sa_password \              --network ${STACK_NAME}_edm-network-swarm \
               --restart-condition none \
               ${DOCKER_REGISTRY}/edm-backend:${GIT_COMMIT_SHORT} \
               dotnet ef database update || echo "Migration service creation failed"

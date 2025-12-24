@@ -90,6 +90,39 @@ if (string.IsNullOrEmpty(secretKey))
 if (string.IsNullOrEmpty(secretKey))
     throw new InvalidOperationException("JWT SecretKey not configured");
 
+// Read SA password from Docker secret
+string saPassword = null;
+var saPasswordFilePath = "/run/secrets/sa_password";
+try
+{
+    if (File.Exists(saPasswordFilePath))
+    {
+        saPassword = File.ReadAllText(saPasswordFilePath).Trim();
+        Console.WriteLine($"Loaded SA password from file {saPasswordFilePath}");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Failed to read SA password file from {saPasswordFilePath}: {ex.Message}");
+}
+
+// Update connection strings with password if available
+if (!string.IsNullOrEmpty(saPassword))
+{
+    var dockerConnection = builder.Configuration.GetConnectionString("DockerConnection");
+    if (!string.IsNullOrEmpty(dockerConnection) && !dockerConnection.Contains("Password="))
+    {
+        dockerConnection += $";Password={saPassword}";
+        builder.Configuration["ConnectionStrings:DockerConnection"] = dockerConnection;
+    }
+    var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrEmpty(defaultConnection) && !defaultConnection.Contains("Password="))
+    {
+        defaultConnection += $";Password={saPassword}";
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = defaultConnection;
+    }
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
