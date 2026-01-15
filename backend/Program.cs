@@ -67,8 +67,8 @@ else
 }
 
 // JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"];
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["Key"];
 
 // If the secret is not set via environment, try reading it from a mounted Docker secret file
 if (string.IsNullOrEmpty(secretKey))
@@ -89,10 +89,10 @@ if (string.IsNullOrEmpty(secretKey))
 }
 
 if (string.IsNullOrEmpty(secretKey))
-    throw new InvalidOperationException("JWT SecretKey not configured");
+    throw new InvalidOperationException("JWT Key not configured");
 
 // Read SA password from Docker secret
-string saPassword = null;
+string? saPassword = null;
 var saPasswordFilePath = "/run/secrets/sa_password";
 try
 {
