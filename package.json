@@ -1,0 +1,17 @@
+{
+  "name": "dotnet-angular-doc",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "husky install",
+    "test:backend": "dotnet test backend.tests/backend.tests.csproj --no-build",
+    "coverage:backend": "node ./scripts/run-coverage.js",
+    "install-frontend": "cd frontend && npm ci",
+    "test:frontend": "cd frontend && npm test --silent",
+    "prepush": "npm run test:backend && npm run coverage:backend && npm --prefix frontend test --silent -- --watch=false --browsers=ChromeHeadless"
+  },
+  "devDependencies": {
+    "husky": "8.0.1",
+    "npm-run-all": "4.1.5"
+  }
+}

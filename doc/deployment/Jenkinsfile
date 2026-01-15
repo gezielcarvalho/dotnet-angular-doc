@@ -1,4 +1,161 @@
 pipeline {
+  agent any
+
+  environment {
+    STACK_NAME = 'edm'
+    QA_COMPOSE = 'docker-stack.qa.yaml'
+    PROD_COMPOSE = 'docker-stack.yaml'
+    // registry host should be provided as a secret text credential with id 'docker-registry-url'
+    DOCKER_REGISTRY = credentials('docker-registry-url')
+    // Docker registry auth should be added as a Jenkins credential (username/password) with id 'docker-registry-credentials'
+    SA_PASSWORD = credentials('sql-server-password')
+    FIREBASE_STORAGE_BUCKET = credentials('firebase-storage-bucket')
+    FIREBASE_CREDENTIALS_JSON = credentials('firebase-credentials-json')
+    JWT_SECRET_KEY = credentials('jwt-secret-key')
+  }
+
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    timestamps()
+    timeout(time: 60, unit: 'MINUTES')
+  }
+
+  triggers {
+    // GitHub webhook configured in job triggers this pipeline
+    githubPush()
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        echo 'Checking out source code...'
+        checkout scm
+        script {
+          env.GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+          env.BRANCH_NAME = env.BRANCH_NAME ?: sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+          echo "Branch: ${env.BRANCH_NAME}"
+          echo "Commit: ${env.GIT_COMMIT_SHORT}"
+        }
+      }
+    }
+
+    stage('Build') {
+      parallel {
+        stage('Build Backend') {
+          steps {
+            echo 'Building backend Docker image locally...'
+            dir('backend') { sh "docker build --target production -t edm-backend:${env.GIT_COMMIT_SHORT} -t edm-backend:latest -f Dockerfile ." }
+          }
+        }
+        stage('Build Frontend') {
+          steps {
+            echo 'Building frontend Docker image locally...'
+            dir('frontend') { sh "docker build --target production -t edm-frontend:${env.GIT_COMMIT_SHORT} -t edm-frontend:latest -f Dockerfile ." }
+          }
+        }
+      }
+    }
+
+    stage('Test') {
+      parallel {
+        stage('Backend Tests') {
+          steps { dir('backend.tests') { sh 'dotnet test --logger "trx;LogFileName=test-results.trx" || true' } }
+          post { always { archiveArtifacts artifacts: 'backend.tests/TestResults/*.trx', allowEmptyArchive: true } }
+        }
+        stage('Frontend Tests') { steps { dir('frontend') { sh 'npm ci && npm run test:ci || true' } } }
+      }
+    }
+
+    stage('Security Scan') {
+      steps {
+        echo 'Scanning images (best-effort)'
+        sh 'if command -v trivy >/dev/null 2>&1; then trivy image --severity HIGH,CRITICAL edm-backend:latest || true; trivy image --severity HIGH,CRITICAL edm-frontend:latest || true; else echo "Trivy not installed, skipping"; fi'
+      }
+    }
+
+    stage('Publish Images') {
+      when { anyOf { branch 'development'; branch 'main' } }
+      steps {
+        script {
+          // Login to registry using stored credentials
+          withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+            sh 'echo $REG_PASS | docker login -u $REG_USER --password-stdin ${DOCKER_REGISTRY}'
+          }
+
+          // Tag and push images with commit tag and latest
+          sh "docker tag edm-backend:latest ${DOCKER_REGISTRY}/edm-backend:${env.GIT_COMMIT_SHORT}"
+          sh "docker tag edm-backend:latest ${DOCKER_REGISTRY}/edm-backend:latest"
+          sh "docker push ${DOCKER_REGISTRY}/edm-backend:${env.GIT_COMMIT_SHORT}"
+          sh "docker push ${DOCKER_REGISTRY}/edm-backend:latest"
+
+          sh "docker tag edm-frontend:latest ${DOCKER_REGISTRY}/edm-frontend:${env.GIT_COMMIT_SHORT}"
+          sh "docker tag edm-frontend:latest ${DOCKER_REGISTRY}/edm-frontend:latest"
+          sh "docker push ${DOCKER_REGISTRY}/edm-frontend:${env.GIT_COMMIT_SHORT}"
+          sh "docker push ${DOCKER_REGISTRY}/edm-frontend:latest"
+        }
+      }
+    }
+
+    stage('Prepare Stack File') {
+      when { anyOf { branch 'development'; branch 'main' } }
+      steps {
+        script {
+          def src = (env.BRANCH_NAME == 'main') ? PROD_COMPOSE : QA_COMPOSE
+          def tmp = "/tmp/docker-stack-${env.BRANCH_NAME}-${env.GIT_COMMIT_SHORT}.yaml"
+          sh "sed -e 's|image: edm-backend:latest|image: ${DOCKER_REGISTRY}/edm-backend:${env.GIT_COMMIT_SHORT}|g' -e 's|image: edm-frontend:latest|image: ${DOCKER_REGISTRY}/edm-frontend:${env.GIT_COMMIT_SHORT}|g' ${src} > ${tmp}"
+          env.RENDERED_STACK = tmp
+          echo "Rendered stack file: ${tmp}"
+        }
+      }
+    }
+
+    stage('Deploy to Swarm') {
+      when { anyOf { branch 'development'; branch 'main' } }
+      steps {
+        script {
+          def target = (env.BRANCH_NAME == 'main') ? 'production' : 'qa'
+          echo "Deploying to ${target} using ${env.RENDERED_STACK}"
+          sh "docker stack deploy -c ${env.RENDERED_STACK} ${STACK_NAME} --with-registry-auth"
+        }
+      }
+    }
+
+    stage('Post-deploy: Health & Migrations') {
+      when { anyOf { branch 'development'; branch 'main' } }
+      steps {
+        script {
+          retry(5) { sleep 10; sh 'curl -f http://localhost/api/health || exit 1' }
+          // run migrations as a separate one-off service (best-effort)
+          sh '''
+            MIGRATE_SERVICE=${STACK_NAME}_migrate
+            CONNECTION_STRING="Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+            docker service create --name $MIGRATE_SERVICE \
+              --env ConnectionStrings__DockerConnection="$CONNECTION_STRING" \              --secret sa_password \              --network ${STACK_NAME}_edm-network-swarm \
+              --restart-condition none \
+              ${DOCKER_REGISTRY}/edm-backend:${GIT_COMMIT_SHORT} \
+              dotnet ef database update || echo "Migration service creation failed"
+            # Wait for migration to complete
+            sleep 30
+            docker service rm $MIGRATE_SERVICE || echo "Migration service removal failed"
+          '''
+        }
+      }
+    }
+
+    stage('Cleanup') {
+      steps {
+        sh 'docker image prune -f || true'
+      }
+    }
+  }
+
+  post {
+    success { echo 'Pipeline succeeded' }
+    failure { echo 'Pipeline failed' }
+    always { cleanWs() }
+  }
+}
+pipeline {
     agent any
     
     environment {

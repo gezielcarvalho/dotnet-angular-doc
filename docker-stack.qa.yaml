@@ -1,12 +1,22 @@
 version: "3.8"
 
+secrets:
+  sa_password:
+    external: true
+  jwt_secret_key:
+    external: true
+
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE}
       - MSSQL_PID=Developer
+    secrets:
+      - source: sa_password
+        target: sa_password
+    environment:
+      - SA_PASSWORD_FILE=/run/secrets/sa_password
     volumes:
       - sqlserver-data-swarm:/var/opt/mssql
     networks:
@@ -44,9 +54,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=${ConnectionStrings__DefaultConnection:-Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;}
-      - ConnectionStrings__DockerConnection=${ConnectionStrings__DockerConnection:-Server=sqlserver,1433;Database=CatalogDB;User Id=sa;Password=${SA_PASSWORD:-YOUR_STRONG_PASSWORD_HERE};TrustServerCertificate=True;}
-      - JwtSettings__SecretKey=${JwtSettings__SecretKey}
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=CatalogDB;User Id=sa;TrustServerCertificate=True;
+      - ConnectionStrings__DockerConnection=Server=sqlserver,1433;Database=CatalogDB;User Id=sa;TrustServerCertificate=True;
       - JwtSettings__Issuer=${JwtSettings__Issuer:-EdmSystem}
       - JwtSettings__Audience=${JwtSettings__Audience:-EdmClient}
       - JwtSettings__ExpirationMinutes=${JwtSettings__ExpirationMinutes:-60}
@@ -56,8 +65,12 @@ services:
       - FileStorage__MaxFileSizeMB=${FileStorage__MaxFileSizeMB:-100}
       - FileStorage__AllowedExtensions=${FileStorage__AllowedExtensions:-[".pdf",".doc",".docx",".xls",".xlsx",".txt",".jpg",".png",".zip"]}
       - Firebase__StorageBucket=${Firebase__StorageBucket}
-      - Firebase__CredentialsJson=${Firebase__CredentialsJson}
       - Frontend__Url=${Frontend__Url:-http://localhost:4200}
+    secrets:
+      - source: sa_password
+        target: sa_password
+      - source: jwt_secret_key
+        target: jwt_secret_key
     networks:
       - edm-network-swarm
     deploy:

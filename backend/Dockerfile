@@ -1,27 +1,17 @@
-# Backend Dockerfile with debugging support
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-# Install debugger
-RUN apt-get update && apt-get install -y unzip && \
-    curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l /vsdbg
-
-# Development stage
-FROM base AS development
+# Backend Dockerfile with production-ready multi-stage build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ["Backend.csproj", "./"]
 RUN dotnet restore "Backend.csproj"
 COPY . .
-WORKDIR "/src"
-RUN dotnet build "Backend.csproj" -c Debug -o /app/build
+RUN dotnet publish -c Release -o /app/out
 
-# Keep container running and enable hot reload
-ENTRYPOINT ["dotnet", "watch", "run", "--project", "Backend.csproj", "--urls", "http://+:80", "--no-launch-profile"]
-
-# Production stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS production
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+COPY --from=build /app/out ./
+RUN dotnet tool install --global dotnet-ef --version 8.0.11
+ENV PATH="$PATH:/root/.dotnet/tools"
+ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
-COPY --from=development /app/build .
+HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost/health || exit 1
 ENTRYPOINT ["dotnet", "Backend.dll"]

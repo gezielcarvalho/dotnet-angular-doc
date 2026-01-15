@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using DotNetEnv;
 
 // Load .env.local only in development
@@ -48,9 +50,14 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddSingleton<IFileStorageService, FirebaseFileStorageService>();
+
+// Health Checks
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<DocumentDbContext>("database");
 // Email service selection (default: smtp client)
 var smtpProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
-if (string.Equals(smtpProvider, "mimekit", StringComparison.OrdinalIgnoreCase) || string.Equals(smtpProvider, "true", StringComparison.OrdinalIgnoreCase))
+var emailServiceType = Backend.ConfigurationUtils.GetEmailServiceType(smtpProvider);
+if (emailServiceType == typeof(Backend.Services.MimeKitEmailService))
 {
     builder.Services.AddScoped<Backend.Services.Interfaces.IEmailService, Backend.Services.MimeKitEmailService>();
 }
@@ -60,8 +67,8 @@ else
 }
 
 // JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"];
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+var secretKey = jwtSettings["Key"];
 
 // If the secret is not set via environment, try reading it from a mounted Docker secret file
 if (string.IsNullOrEmpty(secretKey))
@@ -82,7 +89,40 @@ if (string.IsNullOrEmpty(secretKey))
 }
 
 if (string.IsNullOrEmpty(secretKey))
-    throw new InvalidOperationException("JWT SecretKey not configured");
+    throw new InvalidOperationException("JWT Key not configured");
+
+// Read SA password from Docker secret
+string? saPassword = null;
+var saPasswordFilePath = "/run/secrets/sa_password";
+try
+{
+    if (File.Exists(saPasswordFilePath))
+    {
+        saPassword = File.ReadAllText(saPasswordFilePath).Trim();
+        Console.WriteLine($"Loaded SA password from file {saPasswordFilePath}");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Failed to read SA password file from {saPasswordFilePath}: {ex.Message}");
+}
+
+// Update connection strings with password if available
+if (!string.IsNullOrEmpty(saPassword))
+{
+    var dockerConnection = builder.Configuration.GetConnectionString("DockerConnection");
+    if (!string.IsNullOrEmpty(dockerConnection) && !dockerConnection.Contains("Password="))
+    {
+        dockerConnection += $";Password={saPassword}";
+        builder.Configuration["ConnectionStrings:DockerConnection"] = dockerConnection;
+    }
+    var defaultConnection = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (!string.IsNullOrEmpty(defaultConnection) && !defaultConnection.Contains("Password="))
+    {
+        defaultConnection += $";Password={saPassword}";
+        builder.Configuration["ConnectionStrings:DefaultConnection"] = defaultConnection;
+    }
+}
 
 builder.Services.AddAuthentication(options =>
 {
@@ -124,13 +164,8 @@ var app = builder.Build();
 var activeEmailProvider = builder.Configuration["Smtp:Provider"] ?? builder.Configuration["Smtp:UseMimeKit"] ?? "smtp";
 app.Logger.LogInformation("Active email provider: {Provider}", activeEmailProvider);
 
-// Apply migrations and seed data automatically on startup
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
-    db.Database.Migrate();
-    await DbSeeder.SeedAsync(db);
-}
+// Note: Database migrations are now run as a separate job post-deployment
+// Seeding is handled separately if needed
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -149,4 +184,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapHealthChecks("/health");
+
 app.Run();
+

@@ -66,7 +66,7 @@ public class MimeKitEmailService : IEmailService
         }
     }
 
-    private static string StripHtmlAndRenderPlainText(string html)
+    internal static string StripHtmlAndRenderPlainText(string html)
     {
         if (string.IsNullOrEmpty(html)) return string.Empty;
         try

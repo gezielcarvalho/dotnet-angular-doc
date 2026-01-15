@@ -23,13 +23,20 @@ param(
 
 Set-StrictMode -Version Latest
 
-# Use a timestamped results directory to avoid stale files
-$timestamp = [int][double]::Parse((Get-Date -UFormat %s))
-$resultsDir = Join-Path -Path "backend.tests/TestResults" -ChildPath "run_$timestamp"
+# Change to the project root directory
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$projectRoot = Split-Path -Parent $scriptDir
+Set-Location $projectRoot
+
+# Use a fixed results directory to avoid stale files
+$resultsDir = Join-Path -Path "backend.tests/TestResults" -ChildPath "coverage_run"
+if (Test-Path $resultsDir) {
+    Remove-Item -Recurse -Force $resultsDir
+}
 New-Item -ItemType Directory -Path $resultsDir | Out-Null
 
 Write-Host "Running tests with coverage into $resultsDir ..."
-& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "$resultsDir"
+& dotnet test backend.tests --nologo --collect:"XPlat Code Coverage" --results-directory "$resultsDir" --settings "backend.tests/coverlet.runsettings"
 if($LASTEXITCODE -ne 0){
   Write-Error "dotnet test failed with exit code $LASTEXITCODE"
   exit $LASTEXITCODE
@@ -52,11 +59,21 @@ if(-not $cov){
     exit 2
 }
 
+
 [xml]$xml = Get-Content $cov.FullName
 $root = $xml.DocumentElement
 
-$linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
-$linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
+# Safely parse integer attributes (avoid PowerShell '??' which isn't supported everywhere)
+$linesValid = 0
+$linesCovered = 0
+$attr = $root.GetAttribute('lines-valid')
+if(-not [string]::IsNullOrEmpty($attr)){
+  [int]::TryParse($attr, [ref]$linesValid) | Out-Null
+}
+$attr = $root.GetAttribute('lines-covered')
+if(-not [string]::IsNullOrEmpty($attr)){
+  [int]::TryParse($attr, [ref]$linesCovered) | Out-Null
+}
 
 if($linesValid -eq 0){
   # try a short retry in case collector wrote placeholder
@@ -68,8 +85,16 @@ if($linesValid -eq 0){
   }
   [xml]$xml = Get-Content $cov.FullName
   $root = $xml.DocumentElement
-  $linesValid = [int]($root.GetAttribute('lines-valid') -as [int] ?? 0)
-  $linesCovered = [int]($root.GetAttribute('lines-covered') -as [int] ?? 0)
+  $linesValid = 0
+  $linesCovered = 0
+  $attr = $root.GetAttribute('lines-valid')
+  if(-not [string]::IsNullOrEmpty($attr)){
+    [int]::TryParse($attr, [ref]$linesValid) | Out-Null
+  }
+  $attr = $root.GetAttribute('lines-covered')
+  if(-not [string]::IsNullOrEmpty($attr)){
+    [int]::TryParse($attr, [ref]$linesCovered) | Out-Null
+  }
 }
 
 Write-Output "Coverage file: $($cov.FullName)"
@@ -88,6 +113,86 @@ $percent = [math]::Round($lineRate * 100, 2)
 
 Write-Output "Coverage summary:"
 Write-Output "  Line coverage : $percent% ($linesCovered / $linesValid)"
+
+# Coverage color thresholds (customizable)
+$GreenThreshold = 80  # Green for >= 80%
+$YellowThreshold = 70 # Yellow for >= 70% and < 80%, Red for < 70%
+
+# Per-file coverage
+Write-Output ""
+Write-Output "Per-file coverage:"
+$packages = $xml.SelectNodes("//package")
+$fileCoverage = @{}
+
+foreach ($package in $packages) {
+    $classes = $package.SelectNodes("classes/class")
+    foreach ($class in $classes) {
+        $fileName = $class.GetAttribute('filename')
+        if ($fileName) {
+            $lines = $class.SelectNodes("lines/line")
+            $totalLines = 0
+            $coveredLines = 0
+            foreach ($line in $lines) {
+                $hits = $line.GetAttribute('hits')
+                if ($hits) {
+                    [int]$hitCount = 0
+                    [int]::TryParse($hits, [ref]$hitCount) | Out-Null
+                    $totalLines++
+                    if ($hitCount -gt 0) {
+                        $coveredLines++
+                    }
+                }
+            }
+
+            if (-not $fileCoverage.ContainsKey($fileName)) {
+                $fileCoverage[$fileName] = @{ Valid = 0; Covered = 0 }
+            }
+            $fileCoverage[$fileName].Valid += $totalLines
+            $fileCoverage[$fileName].Covered += $coveredLines
+        }
+    }
+}
+
+# Create table data
+$tableData = $fileCoverage.GetEnumerator() | 
+    Where-Object { $_.Value.Valid -gt 0 } |
+    ForEach-Object {
+        $percent = [math]::Round(($_.Value.Covered / $_.Value.Valid) * 100, 2)
+        [PSCustomObject]@{
+            File = $_.Key
+            Lines = "$($_.Value.Covered)/$($_.Value.Valid)"
+            Coverage = $percent
+        }
+    } |
+    Sort-Object -Property Coverage -Descending
+
+# Display colored table
+Write-Host ""
+Write-Host "File".PadRight(60) -NoNewline
+Write-Host "Lines".PadRight(10) -NoNewline
+Write-Host "Coverage"
+Write-Host ("-" * 60) -NoNewline
+Write-Host ("-" * 10) -NoNewline
+Write-Host ("-" * 8)
+
+foreach ($row in $tableData) {
+    $file = $row.File.PadRight(60)
+    $lines = $row.Lines.PadRight(10)
+    $coveragePercent = $row.Coverage
+    
+    # Determine color based on coverage
+    if ($coveragePercent -ge $GreenThreshold) {
+        $color = "Green"
+    } elseif ($coveragePercent -ge $YellowThreshold) {
+        $color = "Yellow"
+    } else {
+        $color = "Red"
+    }
+    
+    Write-Host $file -NoNewline
+    Write-Host $lines -NoNewline
+    Write-Host "$coveragePercent%" -ForegroundColor $color
+}
 
 if($FailUnder -gt 0 -and $percent -lt $FailUnder){
   Write-Host "Coverage $percent% is below threshold $FailUnder% - failing" -ForegroundColor Red

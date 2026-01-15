@@ -120,8 +120,23 @@ public class TagsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        var result = await GetTag(id);
-        return Ok(ApiResponse<TagDTO>.SuccessResponse(result.Value?.Data!, "Tag updated successfully"));
+        var tagDto = await _context.Tags
+            .Include(t => t.DocumentTags)
+            .Where(t => t.Id == id)
+            .Select(t => new TagDTO
+            {
+                Id = t.Id,
+                Name = t.Name,
+                Description = t.Description,
+                Color = t.Color,
+                DocumentCount = t.DocumentTags.Count
+            })
+            .FirstOrDefaultAsync();
+
+        if (tagDto == null)
+            return NotFound(ApiResponse<TagDTO>.ErrorResponse("Tag not found"));
+
+        return Ok(ApiResponse<TagDTO>.SuccessResponse(tagDto, "Tag updated successfully"));
     }
 
     [Authorize(Roles = "SystemAdmin,Admin")]
