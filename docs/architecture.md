@@ -36,6 +36,6 @@ also describes an in-memory database option for backend tests.
 
 ## Historical references
 
-See [`../doc/`](../doc/) for prior modeling, diagrams, deployment notes, and
+See [`legacy/`](legacy/) for prior modeling, diagrams, deployment notes, and
 troubleshooting records. Create an ADR only for a future choice that materially
 changes these boundaries.

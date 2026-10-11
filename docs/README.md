@@ -7,8 +7,8 @@ project track live work; these files explain stable project context.
 ## Documentation boundaries
 
 - `docs/` records the current purpose, delivery model, and decisions.
-- [`../doc/`](../doc/) is retained without modification as historical design,
-  deployment, and troubleshooting material.
+- [`legacy/`](legacy/) retains historical design, deployment, and
+  troubleshooting material.
 - The application README remains the primary setup and run guide.
 
 ## Core documents
@@ -19,5 +19,6 @@ project track live work; these files explain stable project context.
 | [scope-and-roadmap.md](scope-and-roadmap.md) | Scope boundary and modernization direction |
 | [architecture.md](architecture.md) | Current system context and technology boundaries |
 | [delivery-and-quality.md](delivery-and-quality.md) | Delivery workflow and quality evidence |
+| [operations.md](operations.md) | Current operational posture and runbook boundary |
 | [risks-and-decisions.md](risks-and-decisions.md) | Risks, assumptions, and decisions |
 | [adr/](adr/) | Durable architecture decision records, when needed |

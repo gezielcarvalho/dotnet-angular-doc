@@ -1,4 +1,7 @@
-# Application Deployment Guide - Catalog Application
+# Historical application deployment guide - Catalog Application
+
+> This material is retained for historical context only. It is not an approved
+> deployment runbook; see [`../../operations.md`](../../operations.md).
 
 **Date:** November 27, 2025  
 **Application:** .NET 8 + Angular Catalog Application  
