@@ -25,7 +25,7 @@ and backend testing in one runnable solution.
 
 - This repository is for educational and demonstration purposes.
 - Application behavior, deployment, and dependencies are out of scope for this documentation baseline.
-- Historical material under `doc/` remains preserved and may not reflect the current code exactly.
+- Historical material under `docs/legacy/` remains preserved and may not reflect the current code exactly.
 
 ## Current status
 

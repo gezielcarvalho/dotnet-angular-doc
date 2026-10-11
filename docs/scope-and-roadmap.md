@@ -12,7 +12,7 @@
 
 - Claiming production readiness, availability guarantees, or a hosted service.
 - Changing product features, deployments, dependencies, or infrastructure as part of this documentation work.
-- Rewriting the retained legacy records in `doc/`.
+- Rewriting the retained legacy records in `docs/legacy/`.
 
 ## Modernization direction
 

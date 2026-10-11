@@ -1,4 +1,7 @@
-# Deployment Documentation
+# Historical deployment documentation
+
+> This material is retained for historical context only. It is not an approved
+> deployment runbook; see [`../../operations.md`](../../operations.md).
 
 This folder contains application-specific deployment guides and configuration files for the Catalog application.
 

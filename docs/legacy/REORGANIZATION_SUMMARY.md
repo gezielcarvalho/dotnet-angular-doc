@@ -1,4 +1,7 @@
-# Documentation Reorganization Summary
+# Historical documentation reorganization summary
+
+> Historical record only. The material described below predates the standard
+> `docs/` structure and must not be used as current deployment guidance.
 
 **Date:** November 27, 2025  
 **Purpose:** Separate generic infrastructure from application-specific deployment
@@ -104,7 +107,7 @@ deployment/
 ```bash
 # Hard-coded in scripts
 GITHUB_REPO="https://github.com/gezielcarvalho/dotnet-angular-doc.git"
-SA_PASSWORD="YourStrong@QAPassw0rd123!"
+SA_PASSWORD="<example-only; never reuse or commit a real password>"
 SERVER_IP="212.227.243.129"
 ```
 
